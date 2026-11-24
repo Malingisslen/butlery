@@ -22626,19 +22626,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get cookDetailsSaveFailed => 'The rating and note could not be saved.';
 
   @override
-  String get menuQuickPicksTitle => 'Quick picks';
+  String get menuQuickPicksTitle => 'Ready-made wishes';
+
+  @override
+  String get menuSavedWeeksRow => 'Start from a saved week';
+
+  @override
+  String get weekTemplateSaveWeekButton => 'Save the week';
 
   @override
   String get menuQuickFastTitle => 'Quick week';
 
   @override
-  String get menuQuickFastSubtitle => 'Recipes of 30 minutes or less';
-
-  @override
   String get menuQuickPantryTitle => 'Use what I have at home';
-
-  @override
-  String get menuQuickPantrySubtitle => 'Recipes that fit your pantry first';
 
   @override
   String get a11yMenuWhyToggle => 'Show why the dish was suggested';
@@ -22669,9 +22669,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get menuQuickPantryNothing =>
       'Nothing in your pantry fits your recipes yet, so the week was chosen as usual.';
-
-  @override
-  String get weekTemplateSaveAction => 'Save week as template';
 
   @override
   String get weekTemplateSaveTitle => 'Save as template';

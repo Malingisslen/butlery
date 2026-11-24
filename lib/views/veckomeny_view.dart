@@ -5,7 +5,6 @@ import 'package:clock/clock.dart';
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:butlery/widgets/common/menus/butlery_menu.dart';
 import 'package:provider/provider.dart';
 
 import 'package:butlery/core/constants/routes.dart';
@@ -21,25 +20,22 @@ import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/widgets/common/layout/butlery_page.dart';
-import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout/detail_pane.dart';
-import 'package:butlery/widgets/menu/group_menu_entry_button.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
 import 'package:butlery/widgets/menu/veckomeny_draft_resume_card.dart';
 import 'package:butlery/widgets/menu/veckomeny_dialogs.dart'
     show VeckomenyDialogs;
+import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart'
+    show MenuWishFill;
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/menu/templates/week_template_actions.dart';
-import 'package:butlery/widgets/menu/templates/week_template_save_dialog.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_body.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_placement_flow.dart';
+import 'package:butlery/views/veckomeny_view/veckomeny_root_actions.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_shopping_flow.dart';
 
 export 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
-
-/// The week menu's root-bar overflow actions.
-enum _VeckomenyRootAction { load, saveTemplate, save, clear }
 
 /// Weekly menu planning view with natural language input and social sharing.
 class VeckomenyView extends StatelessWidget {
@@ -105,6 +101,11 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
   @override
   void markRevealing() => setState(() => _revealing = true);
 
+  MenuWishFill? _activeFill;
+
+  @override
+  bool get fillPantryFocus => _activeFill?.pantryFocus ?? false;
+
   @override
   void initState() {
     super.initState();
@@ -148,8 +149,36 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
     super.dispose();
   }
 
+  // A fill holds only while the field still says exactly what it wrote, so
+  // typing, a voice transcript, the clear button and a template all drop it.
   void _onPromptChanged() {
+    final fill = _activeFill;
+    if (fill != null && _promptController.text.trim() != fill.text) {
+      _activeFill = null;
+    }
     if (mounted) setState(() {});
+  }
+
+  void _pickWish(MenuWishFill fill) {
+    _promptController.text = fill.text;
+    _promptController.selection = TextSelection.collapsed(
+      offset: fill.text.length,
+    );
+    setState(() => _activeFill = fill);
+  }
+
+  void _openSavedWeeks() {
+    unawaited(
+      showTemplatesAndSavedMenus(
+        context,
+        viewModel: context.read<MenuViewModel>(),
+        calendar: context.read<WeeklyMenuPlanViewModel>(),
+        onTemplateSelected: (prompt) {
+          _promptController.text = prompt;
+          setState(() => _activeFill = null);
+        },
+      ),
+    );
   }
 
   Future<void> _loadViewModePreference() async {
@@ -332,7 +361,19 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
     return ButleryPage.rot(
       title: context.l10n.menuWeek,
       secondaryLine: _weekLine(context, planVm),
-      actions: _buildHeaderActions(context, viewModel),
+      actions: buildVeckomenyRootActions(
+        context,
+        viewModel: viewModel,
+        isLiveMenu: widget.realtimeMenuId != null,
+        onSave: () => unawaited(
+          VeckomenyDialogs.showSaveMenuDialog(
+            context,
+            viewModel: viewModel,
+            availableFriends: _friendsService.friends,
+          ),
+        ),
+        onClear: _clearMenu,
+      ),
       width: PageWidth.wide,
       body: VeckomenyBody(
         viewModel: viewModel,
@@ -346,6 +387,9 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
         onGenerate: generateMenu,
         onCancelPlanning: cancelPlanning,
         onPromptChanged: () => setState(() {}),
+        activeWishSourceId: _activeFill?.sourceId,
+        onPickWish: _pickWish,
+        onOpenSavedWeeks: _openSavedWeeks,
         onRevealDone: () {
           if (mounted) setState(() => _revealing = false);
         },
@@ -391,86 +435,5 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
       onPlaceAuto: () => unawaited(onPlaceAutomatically()),
       onPlaceManual: () => unawaited(openPlacement(redoAuto: false)),
     );
-  }
-
-  List<Widget> _buildHeaderActions(
-    BuildContext context,
-    MenuViewModel viewModel,
-  ) {
-    // The bar gives the icons its own foreground: text.primary on the light
-    // root bar in both modes (ButleryTopBar).
-    //
-    // The group week keeps its icon (it is reached from here and from
-    // the group chat, BUT-1971); load, save and clear share one overflow
-    // menu, so the title always has room.
-    return [
-      const GroupMenuEntryButton(),
-      ButleryMenu<_VeckomenyRootAction>(
-        key: const ValueKey('veckomeny-root-more'),
-        semanticLabel: context.l10n.rootBarMoreActions,
-        onSelected: (action) {
-          switch (action) {
-            case _VeckomenyRootAction.load:
-              unawaited(
-                showTemplatesAndSavedMenus(
-                  context,
-                  viewModel: viewModel,
-                  calendar: context.read<WeeklyMenuPlanViewModel>(),
-                  onTemplateSelected: (prompt) {
-                    _promptController.text = prompt;
-                    setState(() {});
-                  },
-                ),
-              );
-            case _VeckomenyRootAction.saveTemplate:
-              unawaited(
-                showSaveWeekTemplateDialog(
-                  context,
-                  context.read<WeeklyMenuPlanViewModel>(),
-                ),
-              );
-            case _VeckomenyRootAction.save:
-              unawaited(
-                VeckomenyDialogs.showSaveMenuDialog(
-                  context,
-                  viewModel: viewModel,
-                  availableFriends: _friendsService.friends,
-                ),
-              );
-            case _VeckomenyRootAction.clear:
-              _clearMenu();
-          }
-        },
-        choices: [
-          // Loading a saved menu would replace the shared one on screen.
-          if (widget.realtimeMenuId == null)
-            ButleryMenuChoice<_VeckomenyRootAction>(
-              value: _VeckomenyRootAction.load,
-              icon: ButleryIcons.folder,
-              label: context.l10n.weekTemplatesAndSavedMenus,
-            ),
-          if (widget.realtimeMenuId == null &&
-              context.watch<WeeklyMenuPlanViewModel>().hasEntries)
-            ButleryMenuChoice<_VeckomenyRootAction>(
-              value: _VeckomenyRootAction.saveTemplate,
-              icon: ButleryIcons.calendar,
-              label: context.l10n.weekTemplateSaveAction,
-            ),
-          if (viewModel.hasMenu)
-            ButleryMenuChoice<_VeckomenyRootAction>(
-              value: _VeckomenyRootAction.save,
-              icon: ButleryIcons.save,
-              label: context.l10n.menuSave,
-            ),
-          // A clear would empty the menu for everyone it is shared with.
-          if (viewModel.hasMenu && widget.realtimeMenuId == null)
-            ButleryMenuChoice<_VeckomenyRootAction>(
-              value: _VeckomenyRootAction.clear,
-              icon: ButleryIcons.x,
-              label: context.l10n.menuClear,
-            ),
-        ],
-      ),
-    ];
   }
 }

@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:butlery/views/veckomeny_view/veckomeny_notices.dart';
 import 'package:provider/provider.dart';
 
+import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/viewmodels/menu_viewmodel.dart';
+import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/layout_components.dart';
+import 'package:butlery/widgets/common/list/butlery_list.dart';
 import 'package:butlery/widgets/menu/calendar_weekly_menu_widget.dart';
 import 'package:butlery/widgets/menu/menu_content_widgets.dart';
 import 'package:butlery/widgets/menu/recurring_rules_entry_band.dart';
@@ -18,6 +21,7 @@ import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart';
+import 'package:butlery/widgets/menu/veckomeny_save_week_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
 import 'package:butlery/widgets/social/family_presence_bar.dart';
 
@@ -38,6 +42,9 @@ class VeckomenyBody extends StatelessWidget {
     required this.onCancelPlanning,
     required this.onPromptChanged,
     required this.onRevealDone,
+    required this.onPickWish,
+    required this.onOpenSavedWeeks,
+    this.activeWishSourceId,
   });
 
   final MenuViewModel viewModel;
@@ -48,10 +55,15 @@ class VeckomenyBody extends StatelessWidget {
   final bool revealing;
   final Widget? draftCard;
   final Future<void> Function(VeckomenyViewMode mode) onSetViewMode;
-  final Future<void> Function({bool pantryFocus}) onGenerate;
+  final Future<void> Function({bool? pantryFocus}) onGenerate;
   final VoidCallback onCancelPlanning;
   final VoidCallback onPromptChanged;
   final VoidCallback onRevealDone;
+  final ValueChanged<MenuWishFill> onPickWish;
+  final VoidCallback onOpenSavedWeeks;
+
+  /// The wish chip whose fill is still in the prompt field.
+  final String? activeWishSourceId;
 
   static const double _minContentHeight = 150;
 
@@ -91,7 +103,6 @@ class VeckomenyBody extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.stretch,
                         spacing: AppDimensions.space12,
                         children: [
-                          const RecurringRulesEntryBand(),
                           VeckomenyViewModeToggle(
                             mode: viewMode,
                             onSelect: (mode) => unawaited(onSetViewMode(mode)),
@@ -133,17 +144,22 @@ class VeckomenyBody extends StatelessWidget {
                           ),
                           if (!viewModel.hasMenu &&
                               !viewModel.isGenerating &&
-                              promptController.text.isEmpty &&
                               !context
                                   .watch<WeeklyMenuPlanViewModel>()
-                                  .hasEntries)
+                                  .hasEntries) ...[
+                            // Shown with text in the field too, so the chip
+                            // that made the fill stays visible as selected.
                             VeckomenyQuickPicks(
-                              onPick: (prompt, {required pantryFocus}) {
-                                promptController.text = prompt;
-                                onPromptChanged();
-                                unawaited(onGenerate(pantryFocus: pantryFocus));
-                              },
+                              activeSourceId: activeWishSourceId,
+                              onPick: onPickWish,
                             ),
+                            ButleryListRow(
+                              label: context.l10n.menuSavedWeeksRow,
+                              leading: ButleryIcons.folder,
+                              onTap: onOpenSavedWeeks,
+                            ),
+                            const RecurringRulesEntryBand(),
+                          ],
                         ],
                       ),
                     ),
@@ -178,8 +194,13 @@ class VeckomenyBody extends StatelessWidget {
                             // BUT-1611: per-meal "who's home" lives inside the
                             // calendar (faces on each slot + a collapsible
                             // week overview), not a separate strip.
-                            child: CalendarWeeklyMenuWidget(
-                              onRefinePrompt: promptFocusNode.requestFocus,
+                            child: Column(
+                              children: [
+                                CalendarWeeklyMenuWidget(
+                                  onRefinePrompt: promptFocusNode.requestFocus,
+                                ),
+                                const VeckomenySaveWeekButton(),
+                              ],
                             ),
                           )
                         : Column(

@@ -11,6 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/router/app_router.dart';
@@ -21,7 +22,12 @@ import 'package:butlery/services/menu_voting_service.dart';
 import 'package:butlery/services/realtime/realtime_menu_service.dart';
 import 'package:butlery/services/realtime/realtime_types.dart';
 import 'package:butlery/services/realtime_sync_service.dart';
+import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
+import 'package:butlery/viewmodels/menu_viewmodel.dart';
 import 'package:butlery/viewmodels/realtime_menu_viewmodel.dart';
+import 'package:butlery/views/recurring_day_rules/recurring_day_rules_view.dart';
+import 'package:butlery/views/veckomeny_view/veckomeny_body.dart';
+import 'package:butlery/widgets/common/menu_persistence/menu_save_dialog.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/menu/menu_placement_footer.dart';
@@ -160,17 +166,15 @@ void main() {
     expect(find.text('Rensa meny'), findsNothing);
   });
 
-  testWidgets('offers no "load saved menu" in the root bar menu', (
-    tester,
-  ) async {
-    // BUT-2522: the calendar holds dishes, so only the live menu keeps
-    // "Spara veckan som mall" away.
+  testWidgets('a live menu offers no "Fasta dagar" and no saved-week '
+      'actions in the root bar menu', (tester) async {
     h.seedWeek(2);
     await withClock(Clock.fixed(flowMonday), () => openLive(tester));
 
     await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
     await tester.pumpAndSettle();
 
+    expect(find.text('Fasta dagar'), findsNothing);
     expect(find.text('Mallar och sparade menyer'), findsNothing);
     expect(find.text('Spara veckan som mall'), findsNothing);
   });
@@ -229,20 +233,122 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-  testWidgets('a personal week with dishes offers "Spara veckan som mall" '
-      '(BUT-2522)', (tester) async {
+  Future<void> openOnMonday(WidgetTester tester) =>
+      withClock(Clock.fixed(flowMonday), () async {
+        await h.pump(tester, home: const VeckomenyView());
+        await tester.pumpAndSettle();
+      });
+
+  testWidgets('the root bar menu of a personal week has "Fasta dagar" and no '
+      'load or save-template choices (BUT-2529)', (tester) async {
     h.seedWeek(2);
     await openRootMenuOnMonday(tester);
 
-    expect(find.text('Spara veckan som mall'), findsOneWidget);
+    expect(find.text('Fasta dagar'), findsOneWidget);
+    expect(find.text('Mallar och sparade menyer'), findsNothing);
+    expect(find.text('Spara veckan som mall'), findsNothing);
   });
 
-  testWidgets('an empty personal week does not offer "Spara veckan som mall" '
-      '(BUT-2522)', (tester) async {
+  testWidgets('a personal week with dishes shows "Spara veckan" under the '
+      'calendar (BUT-2522)', (tester) async {
+    h.seedWeek(2);
+    await openOnMonday(tester);
+
+    expect(find.text('Spara veckan'), findsOneWidget);
+  });
+
+  testWidgets('an empty personal week shows no "Spara veckan" (BUT-2522)', (
+    tester,
+  ) async {
+    await openOnMonday(tester);
+
+    expect(find.text('Spara veckan'), findsNothing);
+  });
+
+  testWidgets('a live menu shows no "Spara veckan" (BUT-2522)', (tester) async {
+    h.seedWeek(2);
+    await withClock(Clock.fixed(flowMonday), () => openLive(tester));
+
+    expect(find.text('Spara veckan'), findsNothing);
+  });
+
+  Future<void> openGeneratedPersonalWeek(WidgetTester tester) =>
+      withClock(Clock.fixed(flowMonday), () async {
+        h.menu.next = {
+          'Middag': [flowDinner(1)],
+        };
+        await h.pump(tester, home: const VeckomenyView());
+        await tester.pumpAndSettle();
+        await h.generate(tester, '1 middag');
+        await tester.pumpAndSettle();
+      });
+
+  Future<void> openRootMenu(WidgetTester tester) async {
+    await tester.tap(find.byKey(const ValueKey('veckomeny-root-more')));
+    await tester.pumpAndSettle();
+  }
+
+  testWidgets('"Fasta dagar" in the root bar menu opens the rules view', (
+    tester,
+  ) async {
+    h.seedWeek(2);
     await openRootMenuOnMonday(tester);
 
-    expect(find.text('Mallar och sparade menyer'), findsOneWidget);
-    expect(find.text('Spara veckan som mall'), findsNothing);
+    await tester.tap(find.text('Fasta dagar'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(RecurringDayRulesView), findsOneWidget);
+  });
+
+  testWidgets('"Spara meny" opens the save dialog and keeps the menu', (
+    tester,
+  ) async {
+    await openGeneratedPersonalWeek(tester);
+    await openRootMenu(tester);
+
+    await tester.tap(find.text('Spara meny'));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(SaveMenuDialog), findsOneWidget);
+    final vm = Provider.of<MenuViewModel>(
+      tester.element(find.byType(VeckomenyBody)),
+      listen: false,
+    );
+    expect(vm.hasMenu, isTrue);
+  });
+
+  testWidgets('"Rensa meny" empties the menu and opens no save dialog', (
+    tester,
+  ) async {
+    await openGeneratedPersonalWeek(tester);
+    final vm = Provider.of<MenuViewModel>(
+      tester.element(find.byType(VeckomenyBody)),
+      listen: false,
+    );
+    expect(vm.hasMenu, isTrue);
+    await openRootMenu(tester);
+
+    await tester.tap(find.text('Rensa meny'));
+    await tester.pumpAndSettle();
+
+    expect(vm.hasMenu, isFalse);
+    expect(find.byType(SaveMenuDialog), findsNothing);
+  });
+
+  testWidgets('"Spara veckan" hides while the calendar is selecting', (
+    tester,
+  ) async {
+    h.seedWeek(2);
+    await openOnMonday(tester);
+    expect(find.text('Spara veckan'), findsOneWidget);
+
+    Provider.of<WeeklyMenuPlanViewModel>(
+      tester.element(find.byType(VeckomenyBody)),
+      listen: false,
+    ).beginSelection();
+    await tester.pumpAndSettle();
+
+    expect(find.text('Spara veckan'), findsNothing);
   });
 
   test('the router reads the menu id from the route arguments', () {

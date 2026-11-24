@@ -45,6 +45,7 @@ class _KeyScreen {
 
 final _screens = <_KeyScreen>[
   const _KeyScreen('veckomeny', row: 'veckomeny::DEFAULT'),
+  const _KeyScreen('veckomeny_tom', row: 'veckomeny::EMPTY'),
   // "Planerar veckan" after 6 s, when the slower line shows
   // (VeckomenyGeneratingOverlay.slowAfter).
   const _KeyScreen(
@@ -89,7 +90,7 @@ void main() {
   });
 
   test('every key screen names a harness row or a host', () {
-    expect(_screens, hasLength(15));
+    expect(_screens, hasLength(16));
     for (final s in _screens) {
       expect(s.row != null || s.host != null, isTrue, reason: s.name);
       if (s.row != null) expect(rows, contains(s.row), reason: s.name);

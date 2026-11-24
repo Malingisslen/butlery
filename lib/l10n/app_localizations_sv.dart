@@ -22432,19 +22432,19 @@ class AppLocalizationsSv extends AppLocalizations {
       'Betyget och anteckningen kunde inte sparas.';
 
   @override
-  String get menuQuickPicksTitle => 'Snabbval';
+  String get menuQuickPicksTitle => 'Färdiga önskemål';
+
+  @override
+  String get menuSavedWeeksRow => 'Börja från en sparad vecka';
+
+  @override
+  String get weekTemplateSaveWeekButton => 'Spara veckan';
 
   @override
   String get menuQuickFastTitle => 'Snabb vecka';
 
   @override
-  String get menuQuickFastSubtitle => 'Recept på max 30 minuter';
-
-  @override
   String get menuQuickPantryTitle => 'Använd det jag har hemma';
-
-  @override
-  String get menuQuickPantrySubtitle => 'Recept som passar ditt skafferi först';
 
   @override
   String get a11yMenuWhyToggle => 'Visa varför rätten föreslogs';
@@ -22475,9 +22475,6 @@ class AppLocalizationsSv extends AppLocalizations {
   @override
   String get menuQuickPantryNothing =>
       'Inget i skafferiet passar dina recept än, så veckan är vald som vanligt.';
-
-  @override
-  String get weekTemplateSaveAction => 'Spara veckan som mall';
 
   @override
   String get weekTemplateSaveTitle => 'Spara som mall';
