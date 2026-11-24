@@ -21,6 +21,8 @@ import 'package:butlery/models/tagging/tag_result.dart';
 import 'package:butlery/models/tagging/ingredient_change_request.dart';
 import 'package:butlery/models/tagging/ingredient_column.dart';
 import 'package:butlery/models/tagging/tri_state.dart';
+import 'package:butlery/models/menu/meal_box.dart';
+import 'package:butlery/repositories/firebase/firebase_meal_box_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_signup_allowlist_repository.dart';
 import 'package:butlery/services/import/models/rate_limit_models.dart';
 import 'package:fake_cloud_firestore/fake_cloud_firestore.dart';
@@ -198,6 +200,16 @@ const allowlists = <Allowlist>[
     writer:
         'lib/repositories/firebase/firebase_signup_allowlist_repository.dart '
         'FirebaseSignupAllowlistRepository.toFirestore',
+  ),
+  // BUT-2486 part 5. One allowlist for every write to a box: the add, a
+  // lunch's take, a count correction and the fold of eaten lunches.
+  Allowlist(
+    label: 'users/{uid}/meal_boxes',
+    mustContain: 'storedOn',
+    anchor: 'function mealBoxWriteValid',
+    writer:
+        'lib/repositories/firebase/firebase_meal_box_repository.dart '
+        'FirebaseMealBoxRepository.toFirestore and takeWriteMap',
   ),
   // Admin ingredient proposals: the document's keys on create, and the
   // editable CSV columns allowed inside `changes`.
@@ -426,6 +438,41 @@ Map<String, Set<String>> writtenKeys() => {
       firestore: FakeFirebaseFirestore(),
       authRepository: auth,
     ).toFirestore(const SignupInvite(email: 'x@example.com')).keys.toSet();
+  }(),
+  // The add and a lunch's take together; `recipeId` is set so a writer that
+  // drops a null key still sends it.
+  'users/{uid}/meal_boxes': () {
+    final auth = FakeAuthRepository()
+      ..setAuthState(
+        user: FakeUser(uid: 'a', displayName: 'A'),
+        userId: 'a',
+        isAuthenticated: true,
+      );
+    final box = MealBox(
+      id: 'b',
+      recipeId: 'r',
+      recipeTitle: 'T',
+      location: MealBoxLocation.fridge,
+      storedOn: DateTime.utc(2026),
+      count: 1,
+      takes: const {'2026-01-01': 1},
+    );
+    final take = MealBoxTake(
+      boxId: 'b',
+      key: '2026-01-01',
+      portions: 1,
+      recipeId: 'r',
+      recipeTitle: 'T',
+      location: MealBoxLocation.fridge,
+      storedOn: DateTime.utc(2026),
+    );
+    return {
+      ...FirebaseMealBoxRepository(
+        firestore: FakeFirebaseFirestore(),
+        authRepository: auth,
+      ).toFirestore(box).keys,
+      ...FirebaseMealBoxRepository.takeWriteMap(take).keys,
+    };
   }(),
   // WIDEST set: every optional key present.
   'ingredient_change_requests create': IngredientChangeRequest(

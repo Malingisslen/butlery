@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-24): BUT-2486 matlådor, del 5 (lådor i kyl och frys)
+
+Se `tasks/but-2486-del5-plan.md`. Malins beslut via kort 2026-11-24 (lådor i kyl/frys, automatisk in/ut som går att rätta, förslag efter matlagning); full panel klar (ADR-0045).
+
 # Aktiv plan (2026-11-24): BUT-2494 allergipåminnelse på inköpslistan
 
 Se `tasks/but-2494-plan.md` (gällande spec överst). Malin valde B (delade val i hushållet) och godkände mockupen; koordinatorn gav klartecken 2026-11-24; intressentgranskning (full panel) och /review-plan utan röda fynd. Öppet hos Malin: barnprofiler och rutans text (kort), policytexten före merge.

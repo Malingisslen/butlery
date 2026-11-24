@@ -97,6 +97,10 @@
   `git rev-parse --is-shallow-repository` first: in a shallow clone `-S` stops at the graft
   and its silence proves nothing, so put the history claim in `notVerified` and ask for a
   live-data count of the field the writer stamped (rows it left are what Art. 17 must reach).
+- A `set(merge: true)` built to RECREATE a deleted parent ("the write names the box in full,
+  so it succeeds when the doc is gone") recreates it on the INVERSE branch too: a removal
+  (`FieldValue.delete()` on one key) against a deleted doc writes back an empty ghost row.
+  Check the remove/give-back branch of every recreate-on-merge writer, and what sweeps it up.
 - An OPT-IN named-parameter guard defaults every EXISTING caller into the restricted branch
   (silent no-op) — ship a named METHOD on the interface instead, with its own exception
   type and a caller that honours the result (ADR-002).

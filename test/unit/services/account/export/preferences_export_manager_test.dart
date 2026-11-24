@@ -145,6 +145,7 @@ class _FakeAccountSubsRepository extends Fake
     this.acquisition = const [],
     this.overwrittenVersions = const [],
     this.trash = const [],
+    this.mealBoxes = const [],
     this.publicRecipes = const [],
     this.settings = const [],
     this.failing = const <String>{},
@@ -154,6 +155,7 @@ class _FakeAccountSubsRepository extends Fake
   final List<Map<String, dynamic>> acquisition;
   final List<Map<String, dynamic>> overwrittenVersions;
   final List<Map<String, dynamic>> trash;
+  final List<Map<String, dynamic>> mealBoxes;
   final List<Map<String, dynamic>> publicRecipes;
   final List<Map<String, dynamic>> settings;
 
@@ -208,6 +210,12 @@ class _FakeAccountSubsRepository extends Fake
     String userId, {
     int maxDocuments = 200,
   }) async => _page('trash', trash, maxDocuments);
+
+  @override
+  Future<List<Map<String, dynamic>>> exportMealBoxes(
+    String userId, {
+    int maxDocuments = 200,
+  }) async => _page('meal_boxes', mealBoxes, maxDocuments);
 
   @override
   Future<List<Map<String, dynamic>>> exportPublicRecipes(
@@ -1253,6 +1261,50 @@ void main() {
           ((result['acquisition'] as List).single as Map)['id'],
           'current',
         );
+      },
+    );
+
+    test('the fridge and freezer boxes are exported in the section', () async {
+      final manager = PreferencesExportManager(
+        dataExportRepository: _FakeAccountSubsRepository(
+          mealBoxes: [
+            {
+              'id': 'box-1',
+              'data': <String, dynamic>{'recipeTitle': 'Gryta', 'count': 3},
+            },
+          ],
+        ),
+      );
+
+      final result = await manager.exportAccountSubcollections('user-uid');
+
+      final rows = result['meal_boxes'] as List;
+      expect((rows.single as Map)['id'], 'box-1');
+      expect(result.containsKey('error_code'), isFalse);
+      expect(result.containsKey('meal_boxes_truncated'), isFalse);
+    });
+
+    test(
+      'a failed meal_boxes read does not take the other legs down',
+      () async {
+        final manager = PreferencesExportManager(
+          dataExportRepository: _FakeAccountSubsRepository(
+            trash: [
+              {'id': 'recipe-1', 'data': <String, dynamic>{}},
+            ],
+            failing: const {'meal_boxes'},
+          ),
+        );
+
+        final result = await manager.exportAccountSubcollections('user-uid');
+
+        expect(result.containsKey('meal_boxes'), isFalse);
+        expect(result['meal_boxes_error_code'], 'meal_boxes-export-failed');
+        expect(
+          result['error_code'],
+          'account-subcollections-partial-export-failure',
+        );
+        expect(((result['trash'] as List).single as Map)['id'], 'recipe-1');
       },
     );
 

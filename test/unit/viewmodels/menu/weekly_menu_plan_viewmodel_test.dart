@@ -147,7 +147,9 @@ void main() {
 
       // Most tests don't exercise save; stub a permissive default that
       // individual tests can override with `when(...).thenAnswer(...)`.
-      when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+      when(
+        () => mockService.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenAnswer((_) async {});
 
       viewModel = WeeklyMenuPlanViewModel(
         service: mockService,
@@ -226,7 +228,8 @@ void main() {
 
       void failTheSave() {
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenThrow(Exception('denied'));
       }
 
@@ -308,7 +311,12 @@ void main() {
           );
 
           // The snapshot must survive, or the retry below restores nothing.
-          when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) async {});
           await viewModel.undoClearWeek();
           expect(viewModel.plan, _shows(seeded.week));
           expect(
@@ -358,7 +366,8 @@ void main() {
           if (!pending.isCompleted) pending.complete();
         });
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenAnswer((_) => pending.future);
 
         unawaited(
@@ -511,7 +520,12 @@ void main() {
         'the surfaced text leaks no exception name, code, uid or path',
         () async {
           await seed();
-          when(() => mockService.saveRevision(any())).thenThrow(
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenThrow(
             PermissionDeniedException(
               'Weekly menu plan save denied',
               resource: 'weekly_menu_plans',
@@ -610,7 +624,12 @@ void main() {
           ).thenReturn(
             WeeklyMenuDistributionResult(plan: week, overflow: [tray]),
           );
-          when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) async {});
           await viewModel.loadWeek(week.weekStartDate);
           await viewModel.applyGeneratedMenu({
             'middag': [tray],
@@ -630,7 +649,10 @@ void main() {
             if (!unacked.isCompleted) unacked.complete();
           });
           when(
-            () => mockService.saveRevision(any()),
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
           ).thenAnswer((_) => unacked.future);
 
           unawaited(
@@ -734,7 +756,10 @@ void main() {
             if (!pending.isCompleted) pending.complete();
           });
           when(
-            () => mockService.saveRevision(any()),
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
           ).thenAnswer((_) => pending.future);
 
           final seenBusy = <bool>[];
@@ -837,7 +862,8 @@ void main() {
           if (!pending.isCompleted) pending.complete();
         });
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenAnswer((_) => pending.future);
 
         unawaited(
@@ -949,7 +975,12 @@ void main() {
           addTearDown(() {
             if (!pending.isCompleted) pending.complete();
           });
-          when(() => mockService.saveRevision(any())).thenAnswer((inv) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((inv) {
             saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
             return pending.future;
           });
@@ -973,7 +1004,8 @@ void main() {
       test('a conflict puts the server week on screen, sets no error and '
           'says so once', () async {
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenThrow(WeekPlanConflictException(remote));
 
         expect(await add('r-mine'), isFalse);
@@ -995,7 +1027,12 @@ void main() {
           final first = Completer<void>();
           final second = Completer<void>();
           var calls = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             calls++;
             return calls == 1 ? first.future : second.future;
           });
@@ -1044,7 +1081,12 @@ void main() {
             local: mine.nextRevision(),
             remote: theirs,
           );
-          when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((inv) async {
             saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
           });
 
@@ -1060,13 +1102,17 @@ void main() {
       test('keepMine writes my dishes with the server createdAt, built on the '
           "server's revId", () async {
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenThrow(WeekPlanConflictException(remote));
         await add('r-mine');
         await Future<void>.delayed(Duration.zero);
         final conflict = conflicts.single;
 
-        when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
         });
         expect(await viewModel.keepMine(conflict), isTrue);
@@ -1122,7 +1168,10 @@ void main() {
 
       test('the next edit is built on what was written', () async {
         final saved = <WeeklyMenuPlan>[];
-        when(() => mockService.saveRevision(any())).thenAnswer((inv) async {
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((inv) async {
           saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
         });
         when(
@@ -1315,7 +1364,10 @@ void main() {
 
         expect(viewModel.plan, isNull);
         expect(viewModel.error, equals(weeklyPlanReadFailedMessage));
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
 
       test(
@@ -1347,7 +1399,12 @@ void main() {
           );
 
           expect(placed, isNull);
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
         },
       );
 
@@ -1368,7 +1425,12 @@ void main() {
           expect(copied, isNull);
           // BUT-1988: presence publishes from `_plan` and saves, so a refused
           // week shows as no save at all rather than as an unused service call.
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
           verifyNever(
             () => mockService.copyWeek(
               fromWeekStart: any(named: 'fromWeekStart'),
@@ -1496,7 +1558,10 @@ void main() {
 
         await viewModel.removeEntry('e-live');
 
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
     });
 
@@ -1736,7 +1801,10 @@ void main() {
         expect(viewModel.overflow, [overflowRecipe]);
         expect(viewModel.hasOverflow, isTrue);
         verify(
-          () => mockService.saveRevision(any(that: _shows(distributedPlan))),
+          () => mockService.saveRevision(
+            any(that: _shows(distributedPlan)),
+            previous: any(named: 'previous'),
+          ),
         ).called(1);
       });
 
@@ -1861,7 +1929,10 @@ void main() {
           1,
           reason: 'the second call must early-return on the in-flight guard',
         );
-        verify(() => mockService.saveRevision(any())).called(1);
+        verify(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).called(1);
         // The refusal is deliberately SILENT (BUT-1987). A message here would
         // land on a surface where `LoadingStateBuilder` ranks error above
         // data, replacing the whole calendar — including the week the first
@@ -1888,7 +1959,10 @@ void main() {
             recipe: any(named: 'recipe'),
           ),
         );
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
 
       test(
@@ -1923,7 +1997,10 @@ void main() {
 
           expect(viewModel.plan, _shows(updated));
           verify(
-            () => mockService.saveRevision(any(that: _shows(updated))),
+            () => mockService.saveRevision(
+              any(that: _shows(updated)),
+              previous: any(named: 'previous'),
+            ),
           ).called(1);
         },
       );
@@ -1966,7 +2043,12 @@ void main() {
             toSlot: MealSlot.middag,
           );
 
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
           // Plan reference unchanged: _plan never reassigned.
           expect(
             identical(viewModel.plan, planBefore),
@@ -2010,7 +2092,10 @@ void main() {
 
         expect(viewModel.plan, _shows(moved));
         verify(
-          () => mockService.saveRevision(any(that: _shows(moved))),
+          () => mockService.saveRevision(
+            any(that: _shows(moved)),
+            previous: any(named: 'previous'),
+          ),
         ).called(1);
       });
 
@@ -2051,7 +2136,12 @@ void main() {
 
           await viewModel.removeEntry('unknown');
 
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
         },
       );
 
@@ -2084,7 +2174,10 @@ void main() {
 
           expect(viewModel.plan, _shows(stripped));
           verify(
-            () => mockService.saveRevision(any(that: _shows(stripped))),
+            () => mockService.saveRevision(
+              any(that: _shows(stripped)),
+              previous: any(named: 'previous'),
+            ),
           ).called(1);
         },
       );
@@ -2112,7 +2205,10 @@ void main() {
         expect(await viewModel.clearWeek(), isFalse);
 
         verifyNever(() => mockService.clearWeek(any()));
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
 
       test(
@@ -2161,7 +2257,12 @@ void main() {
           expect(viewModel.overflow, isEmpty);
           // Plan was already empty → service.clearWeek returns the same plan →
           // `identical(cleared, current)` → save must NOT be fired by clearWeek.
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
         },
       );
 
@@ -2183,7 +2284,10 @@ void main() {
 
         expect(viewModel.plan, _shows(cleared));
         verify(
-          () => mockService.saveRevision(any(that: _shows(cleared))),
+          () => mockService.saveRevision(
+            any(that: _shows(cleared)),
+            previous: any(named: 'previous'),
+          ),
         ).called(1);
       });
 
@@ -2219,13 +2323,21 @@ void main() {
 
           expect(viewModel.plan, _shows(restored));
           verify(
-            () => mockService.saveRevision(any(that: _shows(restored))),
+            () => mockService.saveRevision(
+              any(that: _shows(restored)),
+              previous: any(named: 'previous'),
+            ),
           ).called(1);
           // Snapshot must be consumed so a second undo is a no-op.
           clearInteractions(mockService);
           await viewModel.undoClearWeek();
           verifyNever(() => mockService.restoreWeek(any(), any()));
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
         },
       );
 
@@ -2244,7 +2356,10 @@ void main() {
         await viewModel.undoClearWeek();
 
         verifyNever(() => mockService.restoreWeek(any(), any()));
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
       });
 
       test('restores the overflow tray on undo (overflow-only clear is not '
@@ -2551,7 +2666,12 @@ void main() {
             if (!refusalA.isCompleted) refusalA.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusalA.future : Future<void>.value();
           });
@@ -2605,7 +2725,12 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2662,7 +2787,10 @@ void main() {
           if (!refusal.isCompleted) refusal.complete();
         });
         var saves = 0;
-        when(() => mockService.saveRevision(any())).thenAnswer((_) {
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) {
           saves++;
           return saves == 1 ? refusal.future : Future<void>.value();
         });
@@ -2715,7 +2843,12 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2777,7 +2910,10 @@ void main() {
             ),
           ).thenReturn(planWith('o-stranger'));
           when(
-            () => mockService.saveRevision(any()),
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
           ).thenThrow(Exception('denied'));
 
           await viewModel.assignFromOverflow(
@@ -2821,7 +2957,12 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2930,7 +3071,12 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -2998,7 +3144,12 @@ void main() {
 
           expect(placed, isNull);
           expect(viewModel.error, 'Veckan kunde inte sparas.');
-          verifyNever(() => mockService.saveRevision(any()));
+          verifyNever(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          );
           // P5-U15: nothing reached the week, so it may be called unchanged.
           expect(viewModel.lastApplyLeftWeekUnchanged, isTrue);
         },
@@ -3028,7 +3179,10 @@ void main() {
             ),
           );
           when(
-            () => mockService.saveRevision(any()),
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
           ).thenThrow(Exception('denied'));
 
           await viewModel.applyGeneratedMenu(const {'middag': <Recipe>[]});
@@ -3077,7 +3231,12 @@ void main() {
             if (!refusal.isCompleted) refusal.complete();
           });
           var saves = 0;
-          when(() => mockService.saveRevision(any())).thenAnswer((_) {
+          when(
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
+          ).thenAnswer((_) {
             saves++;
             return saves == 1 ? refusal.future : Future<void>.value();
           });
@@ -3140,7 +3299,10 @@ void main() {
             overflow: const [],
           ),
         );
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         // The real callback reaches `PersistenceService` and `context.l10n`,
         // so a throw here is not hypothetical. Unwrapped it escapes the write
@@ -3150,7 +3312,10 @@ void main() {
           onPublished: (_) => throw StateError('ui'),
         );
 
-        verify(() => mockService.saveRevision(any())).called(1);
+        verify(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).called(1);
         expect(viewModel.error, isNull);
       });
 
@@ -3181,7 +3346,10 @@ void main() {
             if (!unacked.isCompleted) unacked.complete();
           });
           when(
-            () => mockService.saveRevision(any()),
+            () => mockService.saveRevision(
+              any(),
+              previous: any(named: 'previous'),
+            ),
           ).thenAnswer((_) => unacked.future);
 
           int? announced;
@@ -3304,7 +3472,8 @@ void main() {
           ),
         );
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenThrow(Exception('boom'));
 
         final placed = await viewModel.applyGeneratedMenu({
@@ -3548,7 +3717,10 @@ void main() {
 
       test('setSlotPresence publishes the selection and saves it', () async {
         await loadPlanWith(const {});
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
 
@@ -3557,7 +3729,12 @@ void main() {
           ['m1'],
         );
         final saved =
-            verify(() => mockService.saveRevision(captureAny())).captured.single
+            verify(
+                  () => mockService.saveRevision(
+                    captureAny(),
+                    previous: any(named: 'previous'),
+                  ),
+                ).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presentMemberIdsFor(DayOfWeek.mon, MealSlot.middag), [
           'm1',
@@ -3574,7 +3751,10 @@ void main() {
           if (!firstSave.isCompleted) firstSave.complete();
         });
         var saves = 0;
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {
           saves++;
           if (saves == 1) return firstSave.future;
           return;
@@ -3599,7 +3779,10 @@ void main() {
 
       test('setSlotPresence leaves the day other meal untouched', () async {
         await loadPlanWith(const {});
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, ['m1']);
 
@@ -3627,7 +3810,10 @@ void main() {
             MealSlot.middag: ['m0'],
           },
         });
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await viewModel.setSlotPresence(DayOfWeek.mon, MealSlot.middag, null);
 
@@ -3639,7 +3825,12 @@ void main() {
           'm0',
         ]);
         final saved =
-            verify(() => mockService.saveRevision(captureAny())).captured.single
+            verify(
+                  () => mockService.saveRevision(
+                    captureAny(),
+                    previous: any(named: 'previous'),
+                  ),
+                ).captured.single
                 as WeeklyMenuPlan;
         expect(
           saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(),
@@ -3654,19 +3845,30 @@ void main() {
             MealSlot.middag: ['m0'],
           },
         });
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await viewModel.setDayPresence(DayOfWeek.mon, null);
 
         final saved =
-            verify(() => mockService.saveRevision(captureAny())).captured.single
+            verify(
+                  () => mockService.saveRevision(
+                    captureAny(),
+                    previous: any(named: 'previous'),
+                  ),
+                ).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presenceBySlot.containsKey(DayOfWeek.mon), isFalse);
       });
 
       test('setDayPresence writes both meals of the day', () async {
         await loadPlanWith(const {});
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         await viewModel.setDayPresence(DayOfWeek.mon, ['m1']);
 
@@ -3677,7 +3879,12 @@ void main() {
           'm1',
         ]);
         final saved =
-            verify(() => mockService.saveRevision(captureAny())).captured.single
+            verify(
+                  () => mockService.saveRevision(
+                    captureAny(),
+                    previous: any(named: 'previous'),
+                  ),
+                ).captured.single
                 as WeeklyMenuPlan;
         expect(saved.presenceBySlot[DayOfWeek.mon]?.keys.toSet(), {
           MealSlot.lunch,
@@ -3694,7 +3901,8 @@ void main() {
           },
         });
         when(
-          () => mockService.saveRevision(any()),
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
         ).thenThrow(Exception('offline'));
 
         final ok = await viewModel.setSlotPresence(
@@ -3719,7 +3927,10 @@ void main() {
           isFalse,
         );
         expect(await viewModel.setDayPresence(DayOfWeek.mon, ['m1']), isFalse);
-        verifyNever(() => mockService.saveRevision(any()));
+        verifyNever(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        );
         // Without the guard the merge throws inside `_executeWrite`, which
         // also returns false — but it sets the error on the way out.
         expect(viewModel.error, isNull);
@@ -3819,7 +4030,10 @@ void main() {
           'button', () async {
         final vm = vmReading(() async => throw StateError('roster down'));
         await loadAndStubDistribution(vm, _plan());
-        when(() => mockService.saveRevision(any())).thenAnswer((_) async {});
+        when(
+          () =>
+              mockService.saveRevision(any(), previous: any(named: 'previous')),
+        ).thenAnswer((_) async {});
 
         final first = await vm.applyGeneratedMenu({
           'middag': [onion],

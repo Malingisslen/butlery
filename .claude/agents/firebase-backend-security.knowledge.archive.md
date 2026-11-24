@@ -11593,3 +11593,26 @@ with null allergens: "declared none" again. The new test stubs `fetchProfile` to
 the save, which production does not do on that path, so it pins a branch production cannot
 reach. Fix: skip the read-back on the unknown branch, or keep `settingsMerged` false unless
 the existence check returned true. Not measured on an emulator.
+
+## 2026-11-24 — BUT-2486 part 5a, `users/{uid}/meal_boxes` (gate review, pass)
+
+Reviewed `FirebaseMealBoxRepository`, `saveWithMealBoxTakes` in
+`FirebaseWeeklyMenuPlanRepository`, both interfaces, and `exportMealBoxes`. Owner scoping is
+structural: every repo path goes through `getUserCollection(null)`, which calls
+`requireCurrentUserId()`. The take path uses `plan.userId`, and the rules' `auth.uid == userId`
+turns a mismatch into a denial of the whole batch, week included. The four `validate*` hooks
+return `true`, and the custom methods bypass base CRUD, so the repo writes no audit rows. No
+refusal is reachable client-side. Every write map (toFirestore, setCount, foldTakes,
+takeWriteMap) keeps to the rules' `hasOnly` set and stamps `updatedAt` with `serverTimestamp()`.
+On a refused batch, `_storedAfterRefusal` finds the week unmoved and rethrows, so a refused take
+surfaces the same way as a refused week. Export: `fetchCapped` (limit+1, truncated flag) over
+the whole collection, matching the cascade's enumeration. No UI caller of `MealBoxService` yet
+(ADR-0045), so no live read cost.
+Non-blocking notes: (1) a give-back take (`portions == null`, so `FieldValue.delete()`) against a
+DELETED box recreates an empty ghost box (title, place and date, no count, no takes), which the
+service's 30-day empty-box sweep removes later. (2) `add`/`setCount`/`delete` await a plain
+write, so offline they hang until the server acks. That is unlike the pantry's
+`awaitOrLeaveQueued` (BUT-2288), and it matters once a flow lands. (3) A week-doc `recipeId`
+over 128 chars, or a take past the 60-key bound, is refused, and the whole week save with it.
+Principle added to the repo-guards-audit chapter: a recreate-on-merge writer recreates on its
+inverse branch too.

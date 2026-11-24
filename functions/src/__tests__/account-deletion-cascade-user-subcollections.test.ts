@@ -279,6 +279,8 @@ async function scenario_steplessSubcollectionsAreErasedNotJustReported(): Promis
     // "Återställ". The TTL policy removes them after 30 days; an account
     // deletion must erase them at once.
     "overwritten_versions",
+    // BUT-2486 part 5: fridge and freezer boxes.
+    "meal_boxes",
     // BUT-907: own deleted recipes kept 30 days in the trash. The TTL policy
     // removes them after 30 days; an account deletion must erase them at once.
     "trash",

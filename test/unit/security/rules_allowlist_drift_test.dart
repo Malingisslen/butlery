@@ -626,9 +626,11 @@ void main() {
     // changedKeys().hasOnly, set differences outside the payload comparison.
     // BUT-2486 added one: the keys().hasOnly over the weekday keys of a week's
     // `lunchboxes` map (in _knowinglyUncovered).
+    // BUT-2486 part 5 added users/{uid}/meal_boxes: one keys().hasOnly in
+    // mealBoxWriteValid(), guarded in allowlists.
     expect(
       'hasOnly('.allMatches(rules).length,
-      69,
+      70,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

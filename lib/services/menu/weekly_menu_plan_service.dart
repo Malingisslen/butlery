@@ -16,6 +16,7 @@ import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/parsed_menu_request.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 import 'package:butlery/repositories/firebase/queued_write.dart';
@@ -467,8 +468,23 @@ class WeeklyMenuPlanService extends BaseService {
   /// BUT-2215: saves exactly [plan], which the caller has already made a new
   /// revision with `nextRevision()`. The week menu publishes that copy before
   /// it saves, so a second quick edit builds on the new revision.
-  Future<void> saveRevision(WeeklyMenuPlan plan) async {
-    await _repository.save(plan);
+  ///
+  /// [previous] is the week this one replaces on screen. Its lunchboxes are
+  /// compared with [plan]'s, and a lunch taken from or given back to a fridge
+  /// or freezer box is written in the same batch (BUT-2486 part 5). Without
+  /// it nothing is compared and no box is touched.
+  Future<void> saveRevision(
+    WeeklyMenuPlan plan, {
+    WeeklyMenuPlan? previous,
+  }) async {
+    final takes = previous == null
+        ? const <MealBoxTake>[]
+        : MealBoxTake.between(previous, plan);
+    if (takes.isEmpty) {
+      await _repository.save(plan);
+    } else {
+      await _repository.saveWithMealBoxTakes(plan, takes);
+    }
     _announceSaved(plan);
   }
 

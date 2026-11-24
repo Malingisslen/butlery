@@ -236,6 +236,10 @@ export const USER_SUBCOLLECTIONS: readonly string[] = [
   // once when the account goes. Exported in the account-subcollections
   // section, so EXPORT ⊇ DELETION holds.
   "overwritten_versions",
+  // BUT-2486 part 5: fridge and freezer boxes, written by
+  // firebase_meal_box_repository.dart and with the week save. Exported in the
+  // account-subcollections section, so EXPORT ⊇ DELETION holds.
+  "meal_boxes",
   // BUT-907: the user's own deleted recipes in the trash, written by the
   // trash repository in the same batch that deletes the recipe. A TTL policy
   // on `expireAt` removes each row; this entry erases them at once when the

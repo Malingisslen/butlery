@@ -99,7 +99,9 @@ void main() {
     when(() => service.overflowTrayOwnerId).thenReturn(null);
     when(() => recipes.stateStream).thenAnswer((_) => recipeStates.stream);
     when(() => recipes.getRecipeById(any())).thenReturn(null);
-    when(() => service.saveRevision(any())).thenAnswer((inv) async {
+    when(
+      () => service.saveRevision(any(), previous: any(named: 'previous')),
+    ).thenAnswer((inv) async {
       saved.add(inv.positionalArguments.first as WeeklyMenuPlan);
     });
     vm = WeeklyMenuPlanViewModel(
@@ -149,7 +151,9 @@ void main() {
 
     test('a refused save puts the week back and says so', () async {
       await load(_week());
-      when(() => service.saveRevision(any())).thenThrow(Exception('denied'));
+      when(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      ).thenThrow(Exception('denied'));
 
       expect(await vm.setLunchbox(DayOfWeek.tue, _prepBox), isFalse);
 
@@ -161,7 +165,9 @@ void main() {
       await load(_week(), readFailed: true);
 
       expect(await vm.setLunchbox(DayOfWeek.tue, _prepBox), isFalse);
-      verifyNever(() => service.saveRevision(any()));
+      verifyNever(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      );
     });
   });
 
@@ -187,7 +193,9 @@ void main() {
       );
 
       expect(placed, isFalse);
-      verifyNever(() => service.saveRevision(any()));
+      verifyNever(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      );
     },
   );
 
@@ -207,7 +215,9 @@ void main() {
       await load(_week(lunchboxes: {DayOfWeek.wed: _prepBox}));
 
       expect(await vm.clearLunchbox(DayOfWeek.tue), isFalse);
-      verifyNever(() => service.saveRevision(any()));
+      verifyNever(
+        () => service.saveRevision(any(), previous: any(named: 'previous')),
+      );
     });
   });
 
@@ -221,7 +231,9 @@ void main() {
         expect(vm.hasEntries, isFalse);
         expect(await vm.clearWeek(), isFalse);
         verifyNever(() => service.clearWeek(any()));
-        verifyNever(() => service.saveRevision(any()));
+        verifyNever(
+          () => service.saveRevision(any(), previous: any(named: 'previous')),
+        );
       },
     );
   });

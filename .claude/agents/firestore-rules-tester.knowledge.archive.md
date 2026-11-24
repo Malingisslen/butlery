@@ -6412,3 +6412,28 @@ Mutants via a sed-derived copy (suite has no PROBE_* env seam), 64 tests:
   64/66 killing exactly L6+L7; update-drop kills L4+L7; create-drop unchanged (L2+L3).
 - Writer check: `WeeklyMenuPlan.toFirestore` omits the key when empty, `serializeAll` keys on
   `DayOfWeek.name` (mon..sun), the scrub sends `FieldValue.delete()` when absent; no writer sends null.
+
+## 2026-11-24 — BUT-2486 part 5: users/{uid}/meal_boxes (commit-gate review)
+
+- New block `mealBoxWriteValid()` + `match /meal_boxes/{boxId}`; suite `meal-boxes-rules.test.ts`
+  (24 tests), registered (`test:rules:meal-boxes`, `test:rules:all`, both workflow paths blocks;
+  `check-test-registration.js` OK). Real rules 24/24 via `emulators:exec`.
+- 18 slice-scoped mutants (each asserted to match once): storedOn/location/updatedAt/hasOnly/
+  count-optional/recipeId-optional/title-min/takes-max/count-max/count-min each killed exactly
+  their named test; write owner check killed guest + stranger; read/delete owner check killed
+  the stranger test. SURVIVED 24/24: `data.recipeId is string`, `data.recipeTitle is string`,
+  `data.count is int`, `data.takes is map` (the suite's `count: "2"` and `takes: 3` deny by
+  CEL error on the neighbouring `>=`/`.size()` even with the guard gone), and
+  `request.auth != null` on the write limb (masked by `request.auth.uid == userId`; anon
+  deny still pinned by the read limb's copy and the pair).
+- Probe cases added to a throwaway copy: `count: 2.5`, `takes: [1]`, `takes: "abc"`,
+  `recipeId: ["r"]`, `recipeTitle: ["Chili"]` — all deny on real rules (29/29), each kills
+  exactly its own type-guard mutant (takes list+string both kill `is map`).
+- Per-case grade of the multi-assertion stranger/anon tests under a mutant replacing both
+  `request.auth.uid == userId` with `true`: stranger get/create/merge-take/delete each flip to
+  ALLOW individually; anon get/create stay DENY (held by `request.auth != null`).
+- Writers checked against `firebase_meal_box_repository.dart`: toFirestore, takeWriteMap
+  (merge, may omit count), setCount update, foldTakes `FieldPath(['takes',k'])` delete — all
+  send `updatedAt: serverTimestamp()`; the suite's maps match.
+- Core card was at 14,998 chars; the CEL `.get`/`in` line moved to the vacuity chapter to fit
+  the map row.

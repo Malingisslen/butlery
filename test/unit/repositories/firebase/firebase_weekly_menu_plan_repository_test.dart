@@ -28,6 +28,7 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/repositories/interfaces/weekly_menu_plan_repository.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/models/menu/lunchbox_plan.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/repositories/firebase/base_firebase_repository.dart';
 import 'package:butlery/repositories/firebase/firebase_audit_repository.dart';
@@ -882,6 +883,127 @@ void main() {
       expect(changed, 0);
       expect(updates, 1);
     });
+  });
+
+  group('saveWithMealBoxTakes (BUT-2486 part 5)', () {
+    final week = DateTime.utc(2026, 1, 12);
+    const boxId = 'box1';
+
+    MealBoxTake take(int? portions, {String key = '2026-01-14'}) => MealBoxTake(
+      boxId: boxId,
+      key: key,
+      portions: portions,
+      recipeId: 'r1',
+      recipeTitle: 'Gryta',
+      location: MealBoxLocation.freezer,
+      storedOn: DateTime(2026, 1, 2),
+    );
+
+    DocumentReference<Map<String, dynamic>> boxDoc(
+      FakeFirebaseFirestore firestore,
+    ) => firestore
+        .collection('users')
+        .doc(_alice)
+        .collection('meal_boxes')
+        .doc(boxId);
+
+    test('writes the week and the box with the take under its date', () async {
+      final firestore = FakeFirebaseFirestore();
+      final plan = _plan(userId: _alice, date: week);
+
+      await _repo(firestore).saveWithMealBoxTakes(plan, [take(2)]);
+
+      final weekDoc = await firestore
+          .collection(FirestoreCollections.weeklyMenuPlans)
+          .doc(plan.id)
+          .get();
+      expect(weekDoc.exists, isTrue);
+      final box = await boxDoc(firestore).get();
+      expect(box.exists, isTrue);
+      expect(box.data()!['takes'], {'2026-01-14': 2});
+      expect(box.data()!['recipeTitle'], 'Gryta');
+      expect(box.data()!['location'], 'freezer');
+      // A take never invents a count for a box it recreates.
+      expect(box.data()!.containsKey('count'), isFalse);
+    });
+
+    test('a take does not overwrite the count or the other takes of an '
+        'existing box', () async {
+      final firestore = FakeFirebaseFirestore();
+      await boxDoc(firestore).set({
+        'recipeTitle': 'Gryta',
+        'location': 'freezer',
+        'storedOn': Timestamp.fromDate(DateTime(2026, 1, 2)),
+        'count': 6,
+        'takes': {'2026-01-13': 1},
+      });
+
+      await _repo(firestore).saveWithMealBoxTakes(
+        _plan(userId: _alice, date: week),
+        [take(2)],
+      );
+
+      final data = (await boxDoc(firestore).get()).data()!;
+      expect(data['count'], 6);
+      expect(data['takes'], {'2026-01-13': 1, '2026-01-14': 2});
+    });
+
+    test('a give-back removes only that key from an existing box', () async {
+      final firestore = FakeFirebaseFirestore();
+      await boxDoc(firestore).set({
+        'recipeTitle': 'Gryta',
+        'location': 'freezer',
+        'storedOn': Timestamp.fromDate(DateTime(2026, 1, 2)),
+        'count': 6,
+        'takes': {'2026-01-13': 1, '2026-01-14': 2},
+      });
+
+      await _repo(firestore).saveWithMealBoxTakes(
+        _plan(userId: _alice, date: week),
+        [take(null)],
+      );
+
+      final data = (await boxDoc(firestore).get()).data()!;
+      expect(data['takes'], {'2026-01-13': 1});
+      expect(data['count'], 6);
+    });
+
+    test(
+      'save writes no meal_boxes document, even for a lunch from a box',
+      () async {
+        final firestore = FakeFirebaseFirestore();
+        final stockBox = MealBox(
+          id: boxId,
+          recipeTitle: 'Gryta',
+          location: MealBoxLocation.freezer,
+          storedOn: DateTime(2026, 1, 2),
+          count: 3,
+        );
+        final plan = _plan(userId: _alice, date: week).copyWith(
+          lunchboxes: {
+            DayOfWeek.wed: Lunchbox.fromStock(stockBox, portions: 2),
+          },
+        );
+        expect(plan.lunchboxes[DayOfWeek.wed]!.isFromStock, isTrue);
+
+        await _repo(firestore).save(plan);
+
+        expect(
+          (await firestore
+                  .collection(FirestoreCollections.weeklyMenuPlans)
+                  .doc(plan.id)
+                  .get())
+              .exists,
+          isTrue,
+        );
+        final boxes = await firestore
+            .collection('users')
+            .doc(_alice)
+            .collection('meal_boxes')
+            .get();
+        expect(boxes.docs, isEmpty);
+      },
+    );
   });
 }
 

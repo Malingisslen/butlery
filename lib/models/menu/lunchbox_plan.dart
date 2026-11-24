@@ -2,6 +2,7 @@
 library;
 
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/menu/meal_box.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/recipe_unified.dart';
 
@@ -52,6 +53,15 @@ class Lunchbox {
   /// which the allergen check reads as the whole household.
   final List<String> takerIds;
 
+  /// The fridge or freezer box this lunch is taken from (part 5), with the
+  /// box's place and date copied so the take can recreate a deleted box.
+  /// Stored as previous-week leftovers with a dish, the one shape an app from
+  /// parts 1-4 neither buys nor drops; such an app saving the week loses
+  /// these three fields and keeps a plain leftover.
+  final String? mealBoxId;
+  final MealBoxLocation? mealBoxLocation;
+  final DateTime? mealBoxStoredOn;
+
   const Lunchbox({
     required this.source,
     this.recipeId,
@@ -60,7 +70,32 @@ class Lunchbox {
     this.fromPreviousWeek = false,
     this.portions = 1,
     this.takerIds = const [],
+    this.mealBoxId,
+    this.mealBoxLocation,
+    this.mealBoxStoredOn,
   });
+
+  /// A lunch from a box in the fridge or freezer.
+  factory Lunchbox.fromStock(
+    MealBox box, {
+    int portions = 1,
+    List<String> takerIds = const [],
+  }) => Lunchbox(
+    source: LunchboxSource.leftovers,
+    fromPreviousWeek: true,
+    recipeId: box.recipeId,
+    recipeTitle: box.recipeTitle,
+    portions: portions,
+    takerIds: takerIds,
+    mealBoxId: box.id,
+    mealBoxLocation: box.location,
+    mealBoxStoredOn: box.storedOn,
+  );
+
+  bool get isFromStock =>
+      MealBox.isValidId(mealBoxId) &&
+      mealBoxStoredOn != null &&
+      (recipeTitle?.isNotEmpty ?? false);
 
   /// Whether the dish is the middag on [fromDay] of the same week.
   bool get followsMiddag =>
@@ -84,6 +119,10 @@ class Lunchbox {
     if (fromPreviousWeek) 'fromPreviousWeek': true,
     'portions': portions,
     'takerIds': takerIds,
+    if (mealBoxId != null) 'mealBoxId': mealBoxId,
+    if (mealBoxLocation != null) 'mealBoxLocation': mealBoxLocation!.name,
+    if (mealBoxStoredOn != null)
+      'mealBoxStoredOn': MealBox.dateKey(mealBoxStoredOn!),
   };
 
   factory Lunchbox.fromMap(Map<String, dynamic> data) {
@@ -107,6 +146,18 @@ class Lunchbox {
       fromPreviousWeek: data['fromPreviousWeek'] == true,
       portions: portions < 1 ? 1 : portions,
       takerIds: SerializationUtils.safeStringList(data, 'takerIds'),
+      mealBoxId: SerializationUtils.safeNullableString(data, 'mealBoxId'),
+      mealBoxLocation: switch (SerializationUtils.safeNullableString(
+        data,
+        'mealBoxLocation',
+      )) {
+        null => null,
+        final name => MealBoxLocation.fromName(name),
+      },
+      mealBoxStoredOn: SerializationUtils.safeDateTime(
+        data,
+        'mealBoxStoredOn',
+      ),
     );
   }
 
@@ -147,10 +198,14 @@ extension WeeklyMenuPlanLunchboxes on WeeklyMenuPlan {
 
   /// This week without the boxes whose STORED dish is [recipeId]. Same-week
   /// leftovers follow their middag, which the entry scrub already removes.
+  /// A box from the fridge or freezer stays: the food is still there, and
+  /// its name is kept on the box.
   WeeklyMenuPlan withoutLunchboxesOf(String recipeId) => copyWith(
     lunchboxes: {
       for (final e in lunchboxes.entries)
-        if (e.value.followsMiddag || e.value.recipeId != recipeId)
+        if (e.value.followsMiddag ||
+            e.value.isFromStock ||
+            e.value.recipeId != recipeId)
           e.key: e.value,
     },
   );
