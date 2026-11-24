@@ -11593,3 +11593,18 @@ with null allergens: "declared none" again. The new test stubs `fetchProfile` to
 the save, which production does not do on that path, so it pins a branch production cannot
 reach. Fix: skip the read-back on the unknown branch, or keep `settingsMerged` false unless
 the existence check returned true. Not measured on an emulator.
+
+## 2026-11-24 — BUT-2490 part 2 PR 1, Dart half (verified clean)
+
+`FirebaseChatGroupRepository.setRecurringDayRules` calls the `setGroupRecurringDayRules`
+callable with `{groupId, rules: RecurringDayRules.toFirestoreList(rules)}`; the payload keys
+are exactly the CF's `RECURRING_RULE_KEYS`, and the CF checks admin+member inside its
+transaction. No client Firestore write path. Like its siblings it calls nothing from
+`PermissionValidationMixin` and the CF writes no `audit_logs` row: the class docstring
+already names that as an open gap (filed Medium, not blocking). `exportChatGroups` ships
+`recurring_day_rules` through `fromFirestoreList` → `toFirestoreList`, which rebuilds each row
+from the seven fixed fields, so a hand-written uid/timestamp key cannot reach the bundle by
+construction; the new test's junk rows (`pizza`, a bare string) would survive a raw
+pass-through, so the projection is pinned. Prose: the model's `RecurringDayRules` docstring
+("as stored on the settings document … firestore.rules bounds the list") is now false for
+the chat_groups copy, which rules do not bound (Info, strike).
