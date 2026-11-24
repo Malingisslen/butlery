@@ -4830,6 +4830,42 @@ class AppLocalizationsSv extends AppLocalizations {
   String get menuVoteSuggestAlternative => 'Föreslå alternativ';
 
   @override
+  String get menuSuggestGetButton => 'Få förslag';
+
+  @override
+  String menuSuggestTitle(String day) {
+    return 'Förslag för $day';
+  }
+
+  @override
+  String get menuSuggestIntro =>
+      'Ur dina egna recept. Lås ett kort du gillar och byt ut resten.';
+
+  @override
+  String get menuSuggestShowOthers => 'Visa andra';
+
+  @override
+  String get menuSuggestLockCard => 'Lås';
+
+  @override
+  String get menuSuggestUnlockCard => 'Lås upp';
+
+  @override
+  String menuSuggestPlaceOnDay(String day) {
+    return 'Lägg på $day';
+  }
+
+  @override
+  String get menuSuggestPickOne => 'Välj ett kort';
+
+  @override
+  String get menuSuggestEmptyTitle => 'Inga förslag';
+
+  @override
+  String get menuSuggestEmptyBody =>
+      'Inga recept passar just nu. Lägg till fler recept så kommer det förslag.';
+
+  @override
   String get menuVoteResolved => 'Omröstning avgjord';
 
   @override

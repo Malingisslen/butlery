@@ -1098,6 +1098,24 @@
       "path": "lib/views/menu_placement_view.dart"
     },
     {
+      "id": "v-menu-day-suggestions",
+      "label": "Förslagsark för en tom dag (BUT-2497)",
+      "context": "view",
+      "path": "lib/widgets/menu/day_suggestion_sheet.dart"
+    },
+    {
+      "id": "svc-menu-day-suggestion",
+      "label": "Dagsförslag: regelurval ur egna recept",
+      "context": "service",
+      "path": "lib/services/menu/day_suggestion_picker.dart"
+    },
+    {
+      "id": "svc-menu-strict-safe-pool",
+      "label": "Strikt säker pool för förslag",
+      "context": "service",
+      "path": "lib/viewmodels/menu/menu_generator/strict_safe_pool.dart"
+    },
+    {
       "id": "svc-menu-scoring",
       "label": "Menypoängsättning",
       "context": "service",
@@ -4657,6 +4675,27 @@
         "MENU-05"
       ],
       "steps": [
+        {
+          "from": "v-veckomeny",
+          "to": "v-menu-day-suggestions",
+          "payload": "\"Få förslag\" i receptväljaren för en tom lunch- eller middagscell öppnar ett ark med fyra rätter",
+          "transport": "bottenark",
+          "verified": true
+        },
+        {
+          "from": "v-menu-day-suggestions",
+          "to": "svc-menu-strict-safe-pool",
+          "payload": "läs hushållets allergen- och kostfiltrerade pool och släpp rätter vars allergenstatus är okänd",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-menu-day-suggestions",
+          "to": "svc-menu-day-suggestion",
+          "payload": "välj fyra: sällan eller aldrig lagade först, samma protein som grannlagen nedprioriterat, låsta kort kvar vid \"Visa andra\"",
+          "transport": "method call",
+          "verified": true
+        },
         {
           "from": "v-veckomeny",
           "to": "vm-menu",
