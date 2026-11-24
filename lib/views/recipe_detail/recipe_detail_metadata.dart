@@ -1,6 +1,8 @@
 // lib/views/recipe_detail/recipe_detail_metadata.dart
 
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
+import 'package:butlery/core/constants/routes.dart';
 import 'package:butlery/viewmodels/recipe_detail_viewmodel.dart';
 import 'package:butlery/theme/app_text_styles.dart';
 import 'package:butlery/theme/app_dimensions.dart';
@@ -203,6 +205,13 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
           ),
         ),
       );
+
+      final lastCooked = widget.viewModel.recipe.lastCookedAt;
+      if (cookCount > 0 && lastCooked != null) {
+        metadataWidgets.add(
+          _buildCookHistoryLink(context, cookCount, lastCooked),
+        );
+      }
 
       // Manual "Betygsätt som familj" entry — the second trigger for family
       // rating (the first is the auto-chain after "Lagat idag"). Square outlined
@@ -496,6 +505,22 @@ class _RecipeDetailMetadataState extends State<RecipeDetailMetadata> {
       if (!context.mounted) return;
       SnackBarUtils.showFailure(context, what: context.l10n.ratingRemoveError);
     }
+  }
+
+  /// The recipe's own cook summary, read off the recipe itself (no extra
+  /// read); a tap opens the full history.
+  Widget _buildCookHistoryLink(
+    BuildContext context,
+    int cookCount,
+    DateTime lastCooked,
+  ) {
+    final l10n = context.l10n;
+    final date = DateFormat.MMMd(l10n.localeName).format(lastCooked);
+    return ActionButtons.textButton(
+      context,
+      label: l10n.cookHistoryRecipeSummary(cookCount, date),
+      onPressed: () => Navigator.of(context).pushNamed(Routes.cookHistory),
+    );
   }
 
   Future<void> _markAsCooked(BuildContext context) async {

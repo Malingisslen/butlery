@@ -2275,6 +2275,12 @@ class FakeSocialRecipeOperations extends Fake
     implements SocialRecipeOperations {
   bool _shouldSucceed = true;
 
+  /// Every `rateRecipe` call, in order, as (recipeId, rating).
+  final List<(String, double)> ratings = [];
+
+  /// Makes `rateRecipe` throw, as the real one does for a recipe the user owns.
+  bool throwOnRate = false;
+
   void setSocialState({bool? shouldSucceed}) {
     if (shouldSucceed != null) _shouldSucceed = shouldSucceed;
   }
@@ -2440,7 +2446,11 @@ class FakeSocialRecipeOperations extends Fake
     required String recipeId,
     required double rating,
     String? review,
-  }) async => true;
+  }) async {
+    if (throwOnRate) throw Exception('rating refused');
+    ratings.add((recipeId, rating));
+    return true;
+  }
 
   @override
   Future<Map<String, dynamic>> getRecipeStats(String recipeId) async => {};

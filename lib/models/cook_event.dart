@@ -26,12 +26,27 @@ class CookEvent {
   /// the stored doc to `{recipeId, cookedAt}` for backward compatibility.
   final List<String> attendeeMemberIds;
 
+  /// This cook's own 1-5 verdict, set from the after-cook sheet. Null when the
+  /// sheet was skipped or the household rated through the family entry.
+  final int? rating;
+
+  /// Free-text note about this cook, at most [maxNoteLength] characters.
+  final String? note;
+
+  /// Id of the CookSnap photo post tied to this cook, when one was added.
+  final String? snapId;
+
+  static const int maxNoteLength = 500;
+
   const CookEvent({
     required this.id,
     required this.userId,
     required this.recipeId,
     required this.cookedAt,
     this.attendeeMemberIds = const [],
+    this.rating,
+    this.note,
+    this.snapId,
   });
 
   factory CookEvent.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
@@ -54,6 +69,9 @@ class CookEvent {
         data,
         'attendeeMemberIds',
       ),
+      rating: SerializationUtils.safeNullableInt(data, 'rating'),
+      note: SerializationUtils.safeNullableString(data, 'note'),
+      snapId: SerializationUtils.safeNullableString(data, 'snapId'),
     );
   }
 
@@ -64,5 +82,8 @@ class CookEvent {
     'recipeId': recipeId,
     'cookedAt': Timestamp.fromDate(cookedAt),
     if (attendeeMemberIds.isNotEmpty) 'attendeeMemberIds': attendeeMemberIds,
+    if (rating != null) 'rating': rating,
+    if (note != null) 'note': note,
+    if (snapId != null) 'snapId': snapId,
   };
 }

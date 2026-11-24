@@ -2238,13 +2238,13 @@ service cloud.firestore {
       allow read, delete: if isAdmin();
     }
 
-    // RECIPE COOK EVENTS - per-user append-only cook log (BUT-838)
-    // One doc per "mark as cooked": {recipeId, cookedAt}. Written in the
+    // RECIPE COOK EVENTS - per-user cook log (BUT-838)
+    // One doc per "mark as cooked". Written in the
     // same WriteBatch as the recipe's core.cookCount bump. The read rule
     // depends only on the {userId} path segment, so the client's
     // countSince aggregate (`where cookedAt >= since` + count()) is
     // provable for the owner without per-doc data access. Events are
-    // immutable (no update); delete stays owner-only. The server-side
+    // frozen apart from rating/note/snapId; delete stays owner-only. The server-side
     // GDPR cascade uses the Admin SDK and bypasses these rules.
     match /recipe_cook_events/{userId}/events/{eventId} {
       allow read: if isAuthenticated() && request.auth.uid == userId;
@@ -2252,7 +2252,7 @@ service cloud.firestore {
       allow create: if isAuthenticated()
         && request.auth.uid == userId
         && hasRequiredFields(['recipeId', 'cookedAt'])
-        && request.resource.data.keys().hasOnly(['recipeId', 'cookedAt', 'attendeeMemberIds'])
+        && request.resource.data.keys().hasOnly(['recipeId', 'cookedAt', 'attendeeMemberIds', 'rating', 'note', 'snapId'])
         && request.resource.data.recipeId is string
         && request.resource.data.recipeId.size() > 0
         && request.resource.data.recipeId.size() <= 200
@@ -2261,11 +2261,23 @@ service cloud.firestore {
         // a bounded list — a household roster is small, the cap blocks abuse.
         && (!('attendeeMemberIds' in request.resource.data)
             || (request.resource.data.attendeeMemberIds is list
-                && request.resource.data.attendeeMemberIds.size() <= 50));
+                && request.resource.data.attendeeMemberIds.size() <= 50))
+        && validCookEventDetails(request.resource.data);
 
-      allow update: if false;
+      // Only the after-cook details may be added or changed, by the owner;
+      // recipeId, cookedAt and attendeeMemberIds stay frozen.
+      allow update: if isAuthenticated()
+        && request.auth.uid == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['rating', 'note', 'snapId'])
+        && validCookEventDetails(request.resource.data);
 
       allow delete: if isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function validCookEventDetails(data) {
+      return (!('rating' in data) || (data.rating is int && data.rating >= 1 && data.rating <= 5))
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500))
+        && (!('snapId' in data) || (data.snapId is string && data.snapId.size() > 0 && data.snapId.size() <= 200));
     }
 
     // ACTIVITY EVENTS - Social activity feed (BUT-1294)

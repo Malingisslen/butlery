@@ -41,6 +41,53 @@ void main() {
     expect(e.toFirestore()['attendeeMemberIds'], ['liam', 'user1']);
   });
 
+  test('toFirestore writes the after-cook details only when set', () {
+    final bare = CookEvent(
+      id: 'e',
+      userId: 'u',
+      recipeId: 'r1',
+      cookedAt: DateTime.utc(2026, 1, 5),
+    ).toFirestore();
+    for (final key in ['rating', 'note', 'snapId']) {
+      expect(bare.containsKey(key), isFalse, reason: key);
+    }
+
+    final full = CookEvent(
+      id: 'e',
+      userId: 'u',
+      recipeId: 'r1',
+      cookedAt: DateTime.utc(2026, 1, 5),
+      rating: 4,
+      note: 'mer lime',
+      snapId: 'snap-1',
+    ).toFirestore();
+    expect(full['rating'], 4);
+    expect(full['note'], 'mer lime');
+    expect(full['snapId'], 'snap-1');
+  });
+
+  test(
+    'fromFirestore reads the after-cook details, null when absent',
+    () async {
+      final fs = FakeFirebaseFirestore();
+      final col = fs.collection('recipe_cook_events/u/events');
+      await col.doc('a').set({
+        'recipeId': 'r1',
+        'cookedAt': DateTime.utc(2026, 1, 5),
+        'rating': 5,
+        'note': 'bra',
+      });
+      await col.doc('b').set({
+        'recipeId': 'r1',
+        'cookedAt': DateTime.utc(2026, 1, 5),
+      });
+      final a = CookEvent.fromFirestore(await col.doc('a').get());
+      final b = CookEvent.fromFirestore(await col.doc('b').get());
+      expect((a.rating, a.note, a.snapId), (5, 'bra', null));
+      expect((b.rating, b.note, b.snapId), (null, null, null));
+    },
+  );
+
   group('fromFirestore', () {
     Future<CookEvent> readEvent(
       FakeFirebaseFirestore fs,

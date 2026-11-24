@@ -603,9 +603,12 @@ void main() {
     // BUT-2110 removed two with the conversation roster block: its create
     // keys().hasOnly (guarded in allowlists until then) and the subject's
     // lastReadAt affectedKeys().hasOnly.
+    // BUT-2526 added one on the cook-event update: affectedKeys().hasOnly over
+    // rating, note and snapId, a diff restriction that freezes recipeId and
+    // cookedAt; the create's keys().hasOnly was already counted.
     expect(
       'hasOnly('.allMatches(rules).length,
-      64,
+      65,
       reason:
           'the `hasOnly(` population changed. Reclassify the new call before '
           'touching this number — it counts `keys().hasOnly`, '

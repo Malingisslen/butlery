@@ -54,6 +54,17 @@ void main() {
     });
   });
 
+  group('Routes — cook history (BUT-2526)', () {
+    test('cookHistory is valid, auth-gated, and slides from the right', () {
+      expect(Routes.isValidRoute(Routes.cookHistory), isTrue);
+      expect(Routes.requiresAuth(Routes.cookHistory), isTrue);
+      expect(
+        Routes.getAnimationType(Routes.cookHistory),
+        RouteAnimationType.slideFromRight,
+      );
+    });
+  });
+
   group('Routes — invariants (BUT-1412 regression guard)', () {
     test('every bottom-slide (import-modal) route is auth-gated', () {
       // The bottom-slide set is the import/capture modals; every one of them

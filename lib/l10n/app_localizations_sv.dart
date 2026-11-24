@@ -22237,4 +22237,93 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get adminPoolLoading => 'Hämtar betyget …';
+
+  @override
+  String get cookDetailsTitle => 'Hur blev det?';
+
+  @override
+  String get cookDetailsRatingLabel => 'Betyg';
+
+  @override
+  String get cookDetailsNoteLabel => 'Anteckning';
+
+  @override
+  String get cookDetailsNoteHint => 't.ex. mer lime nästa gång';
+
+  @override
+  String get cookDetailsSave => 'Spara';
+
+  @override
+  String get cookDetailsSkip => 'Hoppa över';
+
+  @override
+  String cookDetailsRateStars(int count) {
+    return 'Sätt $count av 5 stjärnor';
+  }
+
+  @override
+  String get cookHistoryTitle => 'Lagade recept';
+
+  @override
+  String get cookHistoryEmptyTitle => 'Inget lagat än';
+
+  @override
+  String get cookHistoryEmptyBody =>
+      'När du markerar ett recept som lagat visas det här, med datum, betyg och anteckning.';
+
+  @override
+  String get cookHistoryFilterAll => 'Alla';
+
+  @override
+  String get cookHistoryFilterFavorites => 'Favoriter';
+
+  @override
+  String get cookHistoryFilterMonth => 'Senaste månaden';
+
+  @override
+  String get cookHistoryFrequent => 'Lagas ofta';
+
+  @override
+  String cookHistoryFrequentSubtitle(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Lagad $count gånger',
+      one: 'Lagad 1 gång',
+    );
+    return '$_temp0 · senast $date';
+  }
+
+  @override
+  String get cookHistoryUnknownRecipe => 'Receptet finns inte kvar';
+
+  @override
+  String get cookHistoryLoadMore => 'Visa fler';
+
+  @override
+  String get cookHistoryLoadError =>
+      'Historiken kunde inte hämtas. Försök igen.';
+
+  @override
+  String get cookHistoryRetry => 'Försök igen';
+
+  @override
+  String cookHistoryRecipeSummary(int count, String date) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count gånger',
+      one: '1 gång',
+    );
+    return '$_temp0 · senast $date';
+  }
+
+  @override
+  String cookHistoryEventRated(String date, String rating) {
+    return '$date · betyg $rating';
+  }
+
+  @override
+  String get cookDetailsSaveFailed =>
+      'Betyget och anteckningen kunde inte sparas.';
 }

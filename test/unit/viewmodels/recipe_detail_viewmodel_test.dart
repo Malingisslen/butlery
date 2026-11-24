@@ -317,6 +317,51 @@ void main() {
         expect(viewModel.isDeleting, isFalse);
       });
 
+      test('saveCookDetails writes the event and mirrors the rating', () async {
+        when(
+          () => mockCookingService.saveCookDetails(
+            rating: any(named: 'rating'),
+            note: any(named: 'note'),
+            snapId: any(named: 'snapId'),
+          ),
+        ).thenAnswer((_) async => true);
+
+        final saved = await viewModel.saveCookDetails(rating: 4, note: 'bra');
+
+        expect(saved, isTrue);
+        verify(
+          () => mockCookingService.saveCookDetails(rating: 4, note: 'bra'),
+        ).called(1);
+        expect(mockRecipeService.mockSocial.ratings, [(testRecipeId, 4.0)]);
+      });
+
+      test('a failing rating mirror never fails the saved event', () async {
+        mockRecipeService.mockSocial.throwOnRate = true;
+        when(
+          () => mockCookingService.saveCookDetails(
+            rating: any(named: 'rating'),
+            note: any(named: 'note'),
+            snapId: any(named: 'snapId'),
+          ),
+        ).thenAnswer((_) async => true);
+
+        expect(await viewModel.saveCookDetails(rating: 5), isTrue);
+      });
+
+      test('a note alone does not touch the recipe rating', () async {
+        when(
+          () => mockCookingService.saveCookDetails(
+            rating: any(named: 'rating'),
+            note: any(named: 'note'),
+            snapId: any(named: 'snapId'),
+          ),
+        ).thenAnswer((_) async => true);
+
+        await viewModel.saveCookDetails(note: 'mer lime');
+
+        expect(mockRecipeService.mockSocial.ratings, isEmpty);
+      });
+
       test('should mark recipe as cooked', () async {
         // Act — VM delegates to RecipeCookingService.markAsCooked (which
         // owns the atomic Firestore increment + per-day session dedup).

@@ -17,6 +17,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/unified/unified_friends_service.dart';
 import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/views/family/who_is_eating_sheet.dart';
+import 'package:butlery/views/recipe_detail/cook_details_sheet.dart';
 import 'package:butlery/views/family/family_rating_entry_view.dart';
 import 'package:butlery/views/pantry/cooked_pantry_flow.dart';
 
@@ -184,10 +185,31 @@ class RecipeManagementHandler {
             presentMemberIds: who.attendeeMemberIds,
           );
         }
+        final ratedByFamily = !who.skipped && who.attendeeMemberIds.isNotEmpty;
+        if (!context.mounted) return;
+        final details = await showCookDetailsSheet(
+          context,
+          recipeTitle: viewModel.recipe.title,
+          askRating: !ratedByFamily,
+        );
+        var detailsSaved = true;
+        if (details != null && !details.isEmpty) {
+          detailsSaved = await viewModel.saveCookDetails(
+            rating: details.rating,
+            note: details.note,
+          );
+        }
         // After the rating screen: opening a route clears snackbars, which
         // would take the pantry's Ångra with it.
         if (!context.mounted) return;
         await offerCookedPantry(context, viewModel.recipe, portions);
+        // Shown after the offer for the same reason: its route would clear it.
+        if (!detailsSaved && context.mounted) {
+          SnackBarUtils.showFailure(
+            context,
+            what: context.l10n.cookDetailsSaveFailed,
+          );
+        }
       } else {
         SnackBarUtils.showInfo(context, context.l10n.recipeAlreadyCookedToday);
       }

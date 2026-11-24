@@ -27,6 +27,25 @@ abstract class CookEventRepository extends Repository<CookEvent> {
     List<String> attendeeMemberIds = const [],
   });
 
+  /// Document id of the event the latest successful [logCookEvent] on this
+  /// repository wrote, so the after-cook details can be attached to it.
+  String? get lastLoggedEventId;
+
+  /// Adds the after-cook details to the signed-in user's own event
+  /// [eventId]. Only the fields passed are written; the rules refuse any
+  /// other key. Returns false on a write failure or an out-of-range value.
+  Future<bool> updateCookEventDetails(
+    String eventId, {
+    int? rating,
+    String? note,
+    String? snapId,
+  });
+
+  /// The signed-in user's newest cook events, newest first, one page.
+  /// Pass the last row's `cookedAt` as [before] for the next page. Rides the
+  /// automatic single-field index on `cookedAt`.
+  Future<List<CookEvent>> fetchRecent({int limit = 30, DateTime? before});
+
   /// The attendee set of [userId]'s most recent cook event that recorded
   /// attendance — the "remember last time" default for the who's-eating picker.
   ///
