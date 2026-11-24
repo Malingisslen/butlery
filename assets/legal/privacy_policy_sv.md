@@ -1,7 +1,7 @@
 # Integritetspolicy för Butlery
 
-**Senast uppdaterad:** 13 november 2026
-**Version:** 1.37
+**Senast uppdaterad:** 24 november 2026
+**Version:** 1.38
 
 ---
 
@@ -36,6 +36,7 @@ Vi samlar in följande typer av personuppgifter när du använder Butlery:
 - **Innehåll du skapar:** Recept, menyer, inköpslistor, kommentarer, betyg
 - **Sociala funktioner:** Vänner, delningar, meddelanden
 - **Delningslänkar:** När du delar ett recept eller en inköpslista med en länk, eller bjuder in en vän med en länk, skapar vi en kortlänk. Den sparar ditt användar-id, länkadressen (som också innehåller ditt användar-id) och när länken skapades. Kortlänken raderas automatiskt efter 14 dagar, och när du raderar kontot. Dina kortlänkar ingår i dataexporten. En länk du redan har skickat kan vi inte ta tillbaka från mottagaren.
+- **Lagade recept:** När du trycker på ”Lagad i dag” sparar vi vilket recept det gällde och när. Efter lagningen kan du också skriva ett betyg från 1 till 5 och en anteckning, och de sparas på den lagningen. Dina lagade recept, betyg och anteckningar ser bara du. De delas inte med vänner eller andra, och ingår i dataexporten. De raderas när du raderar kontot.
 - **Kommunikation:** Meddelanden du skickar till oss eller andra användare
 - **Feedback:** När du skickar feedback i appen sparar vi det du skriver, vilken sorts feedback det är, din e-postadress om du anger den och en skärmbild om du bifogar en. Vi sparar också de senaste 20 skärmar och åtgärder du gjorde i appen före feedbacken, med tidpunkt, och vilken plattform, appversion och tidszon du har. Feedbacken sparas i cirka 12 månader och raderas tidigare om du raderar kontot.
 
@@ -294,6 +295,7 @@ Loggar du in med Google eller Apple går inloggningen genom Firebase Authenticat
 | Inloggningssätt från Google eller Apple (användar-id, e-postadress och namn därifrån, och från Google en länk till profilbilden som inte visas) | Tills du tar bort inloggningssättet under Konto och säkerhet → Inloggningssätt eller raderar kontot | Fullgörande av avtal |
 | Gästkonto och allt du sparat som gäst, med räknaren för AI-importer | Tills du skapar ett konto, loggar ut, eller 30 dagar efter att du senast använde appen | Fullgörande av avtal |
 | Recept och menyer | Tills du raderar dem eller kontot | Fullgörande av avtal |
+| Lagade recept, med betyg och anteckning efter lagningen | Tills du raderar kontot | Fullgörande av avtal |
 | Recept du visar på din profil (det andra ser, med egna bildkopior) | Tills du slutar visa receptet, raderar det eller raderar kontot | Fullgörande av avtal |
 | Kortlänkar när du delar eller bjuder in med en länk (ditt användar-id, länkadressen och när den skapades) | 14 dagar efter att länken skapades, eller tills du raderar kontot | Fullgörande av avtal |
 | Recept du har raderat, med bilder (papperskorgen) | 30 dagar efter raderingen, eller tills du raderar dem för gott, tömmer papperskorgen eller raderar kontot | Fullgörande av avtal |
