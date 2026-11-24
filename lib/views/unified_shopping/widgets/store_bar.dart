@@ -4,13 +4,13 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/models/shopping_store.dart';
 import 'package:butlery/theme/app_dimensions.dart';
 import 'package:butlery/viewmodels/unified_shopping_viewmodel.dart';
+import 'package:butlery/widgets/common/buttons/app_icon_button.dart';
 import 'package:butlery/widgets/common/chips/butlery_action_chip.dart';
 import 'package:butlery/widgets/common/dialogs/confirmation_dialogs.dart';
 import 'package:butlery/widgets/common/icons/butlery_icons.dart';
 import 'package:butlery/widgets/common/list/butlery_item_row.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet_header.dart';
-import 'package:butlery/widgets/common/icons/butlery_glyph.dart';
 
 /// One chip under the list header: which store this list is sorted for.
 class ShoppingStoreBar extends StatelessWidget {
@@ -124,9 +124,9 @@ class StorePickerSheet extends StatelessWidget {
                       await viewModel.selectStore(store.id);
                       navigator.pop();
                     },
-                    trailing: IconButton(
-                      tooltip: context.l10n.shoppingStoreDeleteConfirm,
-                      icon: const ButleryIcon(ButleryIcons.close),
+                    trailing: AppIconButton(
+                      semanticLabel: context.l10n.shoppingStoreDeleteConfirm,
+                      icon: ButleryIcons.close,
                       onPressed: () => _delete(context, store),
                     ),
                   ),
