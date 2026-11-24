@@ -6,7 +6,7 @@ import 'package:butlery/services/deep_link_service.dart' show ShortUrlGenerator;
 import 'package:butlery/services/social/blocking/blocked_user_filter.dart'
     show ShareRecipientFilter;
 import 'dart:async';
-import 'package:flutter/foundation.dart' show visibleForTesting;
+import 'package:flutter/foundation.dart' show listEquals, visibleForTesting;
 import 'package:rxdart/rxdart.dart';
 import 'package:butlery/services/unified/types/service_states.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -314,6 +314,33 @@ class UnifiedShoppingService
         activeListId: _activeListId,
         error: _error,
       ),
+    );
+    _ensureListOrderLoaded();
+  }
+
+  // The list's saved category order is read on demand, once per list per
+  // session, and only the open list needs it.
+  String? _listOrderRequestedFor;
+
+  void _ensureListOrderLoaded() {
+    final listId = _activeListId;
+    if (listId == null || listId == _listOrderRequestedFor) return;
+    _listOrderRequestedFor = listId;
+    final before = _categoryPreferences.getEffectiveCategoryOrder(listId);
+    unawaited(
+      _categoryPreferences
+          .loadListCategoryOrder(listId)
+          .then((_) {
+            // A sign-out in the meantime cleared the key; say nothing then.
+            if (_listOrderRequestedFor != listId) return;
+            final after = _categoryPreferences.getEffectiveCategoryOrder(
+              listId,
+            );
+            if (!listEquals(before, after)) notifyListeners();
+          })
+          .catchError((Object e, StackTrace st) {
+            AppLogger.error('Failed to load list category order: $e', st);
+          }),
     );
   }
 
@@ -897,6 +924,7 @@ class UnifiedShoppingService
     _error = null;
     _lastMutationError = null;
     _categoryPreferences.reset();
+    _listOrderRequestedFor = null;
     _stateSubject.add(const ShoppingStateLoading());
   }
 

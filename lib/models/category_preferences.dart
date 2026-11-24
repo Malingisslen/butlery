@@ -1,20 +1,26 @@
 import 'package:clock/clock.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:butlery/core/utils/serialization_utils.dart';
+import 'package:butlery/models/shopping_store.dart';
 import 'package:butlery/models/unified/unified_shopping_item.dart';
 
 /// Per-user category preferences for shopping lists.
-/// Stores item→category overrides and default category display order.
+/// Stores item→category overrides, default category display order and the
+/// user's own stores (each with its own order) and which one a list uses.
 class CategoryPreferences {
   final String id;
   final Map<String, String> itemCategoryOverrides;
   final List<String> defaultCategoryOrder;
+  final List<ShoppingStore> stores;
+  final Map<String, String> activeStoreByList;
   final DateTime updatedAt;
 
   CategoryPreferences({
     this.id = 'shopping',
     this.itemCategoryOverrides = const {},
     List<String>? defaultCategoryOrder,
+    this.stores = const [],
+    this.activeStoreByList = const {},
     DateTime? updatedAt,
   }) : defaultCategoryOrder =
            defaultCategoryOrder ?? ShoppingCategory.defaultStoreOrder,
@@ -23,6 +29,8 @@ class CategoryPreferences {
   CategoryPreferences copyWith({
     Map<String, String>? itemCategoryOverrides,
     List<String>? defaultCategoryOrder,
+    List<ShoppingStore>? stores,
+    Map<String, String>? activeStoreByList,
     DateTime? updatedAt,
   }) {
     return CategoryPreferences(
@@ -30,6 +38,8 @@ class CategoryPreferences {
       itemCategoryOverrides:
           itemCategoryOverrides ?? this.itemCategoryOverrides,
       defaultCategoryOrder: defaultCategoryOrder ?? this.defaultCategoryOrder,
+      stores: stores ?? this.stores,
+      activeStoreByList: activeStoreByList ?? this.activeStoreByList,
       updatedAt: updatedAt ?? clock.now(),
     );
   }
@@ -38,6 +48,8 @@ class CategoryPreferences {
     return {
       'itemCategoryOverrides': itemCategoryOverrides,
       'defaultCategoryOrder': defaultCategoryOrder,
+      'stores': stores.map((s) => s.toFirestore()).toList(),
+      'activeStoreByList': activeStoreByList,
       'updatedAt': Timestamp.fromDate(updatedAt),
     };
   }
@@ -52,6 +64,15 @@ class CategoryPreferences {
         data,
         'defaultCategoryOrder',
       ),
+      stores: SerializationUtils.safeList<ShoppingStore?>(
+        data,
+        'stores',
+        ShoppingStore.tryFromFirestore,
+      ).whereType<ShoppingStore>().toList(),
+      activeStoreByList: SerializationUtils.safeMap(
+        data,
+        'activeStoreByList',
+      ).map((k, v) => MapEntry(k, v.toString())),
       updatedAt: SerializationUtils.safeDateTime(data, 'updatedAt'),
     );
   }

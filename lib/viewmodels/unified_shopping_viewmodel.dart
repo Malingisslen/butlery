@@ -16,6 +16,7 @@
 // lib/viewmodels/unified_shopping_viewmodel.dart
 
 import 'dart:async';
+import 'package:butlery/models/shopping_store.dart';
 import 'package:butlery/models/unified/shopping_row_snapshot.dart';
 import 'package:butlery/services/unified/unified_shopping_service.dart';
 import 'package:butlery/services/unified/operations/collaborative_shopping/list_lifecycle_operations.dart';
@@ -709,13 +710,46 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     return result;
   }
 
-  /// Save category order for the active list
+  List<ShoppingStore> get shoppingStores =>
+      _shoppingService.categoryPreferences.stores;
+
+  /// The store picked for the active list, or null.
+  ShoppingStore? get activeStore =>
+      _shoppingService.categoryPreferences.activeStoreFor(activeList?.id);
+
+  Future<void> selectStore(String? storeId) async {
+    if (activeList == null) return;
+    await _shoppingService.categoryPreferences.setActiveStore(
+      activeList!.id,
+      storeId,
+    );
+    notifyListeners();
+  }
+
+  /// Adds a store and picks it for the active list; false when refused.
+  Future<bool> addStoreAndSelect(String name) async {
+    final prefs = _shoppingService.categoryPreferences;
+    final store = await prefs.addStore(name);
+    if (store == null) return false;
+    await selectStore(store.id);
+    return true;
+  }
+
+  Future<void> deleteStore(String storeId) async {
+    await _shoppingService.categoryPreferences.deleteStore(storeId);
+    notifyListeners();
+  }
+
+  /// Save category order for the active store, or the active list with none
   Future<void> saveCategoryOrder(List<String> order) async {
     if (activeList == null) return;
-    await _shoppingService.categoryPreferences.saveListCategoryOrder(
-      activeList!.id,
-      order,
-    );
+    final prefs = _shoppingService.categoryPreferences;
+    final store = activeStore;
+    if (store != null) {
+      await prefs.saveStoreCategoryOrder(store.id, order);
+    } else {
+      await prefs.saveListCategoryOrder(activeList!.id, order);
+    }
     notifyListeners();
   }
 
@@ -725,12 +759,16 @@ class UnifiedShoppingViewModel extends BaseViewModel {
     notifyListeners();
   }
 
-  /// Reset active list's category order to user default
+  /// Clear the active store's order, or with no store the list's own order
   Future<void> resetListCategoryOrder() async {
     if (activeList == null) return;
-    await _shoppingService.categoryPreferences.resetListCategoryOrder(
-      activeList!.id,
-    );
+    final prefs = _shoppingService.categoryPreferences;
+    final store = activeStore;
+    if (store != null) {
+      await prefs.saveStoreCategoryOrder(store.id, const []);
+    } else {
+      await prefs.resetListCategoryOrder(activeList!.id);
+    }
     notifyListeners();
   }
 
