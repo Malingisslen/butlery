@@ -77,7 +77,7 @@ export async function setGroupRecurringDayRulesWithDeps(
   const checked = checkRecurringDayRules(request.rules);
   if (!checked.ok) {
     throw new HttpsError("invalid-argument", "Invalid rules.", {
-      reason: checked.reason,
+      reason: checked.problem,
     });
   }
 
