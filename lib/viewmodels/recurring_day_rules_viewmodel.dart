@@ -1,30 +1,33 @@
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
-import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/recurring_day_rules/recurring_day_rule_store.dart';
 
 /// "Fasta dagar" (BUT-2490): the list and the editor share this model.
 class RecurringDayRulesViewModel extends BaseViewModel with ErrorHandlingMixin {
+  /// [store] decides whose rules these are; without one it is the signed-in
+  /// user's own, read through [reader] and saved through [editor].
   RecurringDayRulesViewModel({
+    RecurringDayRuleStore? store,
     OwnProfileReader? reader,
     OwnProfileEditor? editor,
-  }) : _reader = reader ?? ServiceLocator.get<OwnProfileReader>(),
-       _editor = editor ?? ServiceLocator.get<OwnProfileEditor>() {
-    _reader.addListener(notifyListeners);
+  }) : _store = store ?? ProfileRuleStore(reader: reader, editor: editor) {
+    _store.addListener(notifyListeners);
   }
 
-  final OwnProfileReader _reader;
-  final OwnProfileEditor _editor;
+  final RecurringDayRuleStore _store;
+
+  /// False for a member reading their group's rules: every write is refused.
+  bool get canEdit => _store.canEdit;
 
   // A swiped row must leave the tree in the same frame, before the write
   // has reached the profile, so a delete hides its rule while it saves.
   final Set<String> _hiding = {};
 
-  List<RecurringDayRule> get _stored =>
-      _reader.currentUserProfile?.recurringDayRules ?? const [];
+  List<RecurringDayRule> get _stored => _store.rules;
 
   List<RecurringDayRule> get rules => _hiding.isEmpty
       ? _stored
@@ -77,8 +80,12 @@ class RecurringDayRulesViewModel extends BaseViewModel with ErrorHandlingMixin {
 
   Future<bool> _write(List<RecurringDayRule> next) async {
     clearError();
+    if (!canEdit) {
+      setError(AppLocale.current.recurringRuleSaveFailed);
+      return false;
+    }
     final saved = await safeExecute(
-      () => _editor.setRecurringDayRules(next),
+      () => _store.write(next),
       operationName: 'Save recurring day rules',
       defaultValue: false,
     );
@@ -92,7 +99,8 @@ class RecurringDayRulesViewModel extends BaseViewModel with ErrorHandlingMixin {
 
   @override
   void dispose() {
-    _reader.removeListener(notifyListeners);
+    _store.removeListener(notifyListeners);
+    _store.dispose();
     super.dispose();
   }
 }

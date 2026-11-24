@@ -7,10 +7,13 @@ import 'package:butlery/core/exceptions/permission_exceptions.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/logger.dart';
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
+import 'package:butlery/models/recipe_unified.dart';
+import 'package:butlery/repositories/interfaces/chat_group_repository.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/unified/operations/realtime_group_menu/realtime_group_menu_module.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
+import 'package:butlery/viewmodels/menu/group_weekly_menu/group_week_rules.dart';
 
 /// Why an edit did not happen. Rendered as a passing notice by the widget,
 /// which owns the wording — a ViewModel that carries Swedish strings bypasses
@@ -54,9 +57,25 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
     required ProfileDirectory userService,
     required this.groupId,
     required this.currentUserId,
+    ChatGroupRepository? chatGroupRepository,
+    String? chatGroupId,
+    List<String> participantIds = const [],
+    bool rulesEnabled = false,
   }) : _service = service,
        _realtime = realtime,
-       _userService = userService;
+       _userService = userService {
+    rules = GroupWeekRules(
+      enabled: rulesEnabled,
+      chatGroupId: chatGroupId,
+      repository: chatGroupRepository,
+      participantIds: participantIds,
+      onChanged: notifyListeners,
+    );
+  }
+
+  /// The group's fixed days (BUT-2490); inactive unless the flag is on and the
+  /// conversation has a chat group.
+  late final GroupWeekRules rules;
 
   GroupWeeklyMenuPlan? _plan;
   DateTime _weekStart = IsoWeekUtils.weekStartOf(DateTime.now());
@@ -86,7 +105,9 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
   /// True when the week loaded and holds nothing. Distinct from a failed read,
   /// which leaves [plan] null with a non-none [failure].
   bool get isEmptyWeek =>
-      _failure == GroupMenuFailure.none && (_plan?.entries.isEmpty ?? true);
+      _failure == GroupMenuFailure.none &&
+      (_plan?.entries.isEmpty ?? true) &&
+      !rules.hasActiveRules;
 
   bool get canEdit => _plan?.canEdit(currentUserId) ?? false;
 
@@ -149,6 +170,7 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
   }
 
   Future<void> loadWeek(DateTime date) async {
+    rules.start();
     final requested = IsoWeekUtils.weekStartOf(date);
     _weekStart = requested;
     _failure = GroupMenuFailure.none;
@@ -361,6 +383,54 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
     return ok;
   }
 
+  /// Whether a tap on a fixed day may open the recipe picker: an editor of the
+  /// week, or anyone for a week nobody has planned yet (the first dish builds it).
+  bool get canPickForRule =>
+      _failure == GroupMenuFailure.none &&
+      (_plan?.canEdit(currentUserId) ?? _plan == null);
+
+  /// Puts one of the picker's own recipes on an empty lunch or middag place a
+  /// fixed day governs. A place a peer filled meanwhile is left alone. A week
+  /// nobody has planned yet is built first, with the roster the poll close would
+  /// have given it.
+  Future<bool> addDish({
+    required DayOfWeek day,
+    required MealSlot slot,
+    required Recipe recipe,
+  }) async {
+    if (isDisposed || slot.isMulti) return false;
+    if (_plan == null) {
+      final requested = _weekStart;
+      final read = await _service.readOrBuildWeek(
+        groupId: groupId,
+        creatorId: currentUserId,
+        date: requested,
+        initialParticipants: rules.seedRoster(currentUserId),
+      );
+      if (isDisposed || _weekStart != requested) return false;
+      final built = read.plan;
+      if (read.readFailed || built == null) {
+        _editNotice = GroupMenuEditProblem.saveFailed;
+        notifyListeners();
+        return false;
+      }
+      // A week a peer planned in the meantime is kept as it is.
+      _plan ??= built;
+      unawaited(_resolveNames(built));
+    }
+    return _edit(
+      (current) => current.entries.any((e) => e.day == day && e.slot == slot)
+          ? current
+          : _service.addEntry(
+              plan: current,
+              actorId: currentUserId,
+              day: day,
+              slot: slot,
+              recipe: recipe,
+            ),
+    );
+  }
+
   /// Compute the edit, put it on screen, then persist.
   Future<bool> _edit(
     GroupWeeklyMenuPlan Function(GroupWeeklyMenuPlan current) mutate,
@@ -418,6 +488,7 @@ class GroupWeeklyMenuViewModel extends BaseViewModel {
   void dispose() {
     _subscription?.cancel();
     _subscription = null;
+    rules.dispose();
     super.dispose();
   }
 }

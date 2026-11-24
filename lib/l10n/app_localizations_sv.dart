@@ -22833,6 +22833,41 @@ class AppLocalizationsSv extends AppLocalizations {
   String get recurringRuleShow => 'Visa';
 
   @override
+  String groupMenuFixedDayCell(String kind) {
+    return 'Fast dag: $kind';
+  }
+
+  @override
+  String get a11yGroupMenuPickFixedDay => 'Välj en rätt';
+
+  @override
+  String recurringRulesGroupTitle(String name) {
+    return 'Fasta dagar · $name';
+  }
+
+  @override
+  String get recurringRulesGroupSection => 'Gruppens regler';
+
+  @override
+  String get recurringRulesGroupEmptyBodyAdmin =>
+      'En fast dag visas för alla i gruppens veckomeny, till exempel tacos på fredagar.';
+
+  @override
+  String get recurringRulesGroupEmptyBodyMember =>
+      'Gruppens admin kan lägga till fasta dagar.';
+
+  @override
+  String get recurringRulesGroupMemberInfo =>
+      'Gruppens fasta dagar. Bara admin ändrar dem.';
+
+  @override
+  String get recurringRuleEditorNoteGroup =>
+      'Alla i gruppen ser den här dagen i veckomenyn. Den som får ändra veckomenyn väljer rätten.';
+
+  @override
+  String get recurringRulePausedShort => 'pausad';
+
+  @override
   String get shoppingHintChooseLactoseFree =>
       'Laktos i hushållet, välj laktosfri';
 

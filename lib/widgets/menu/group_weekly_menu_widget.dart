@@ -25,7 +25,9 @@ import 'package:butlery/widgets/menu/calendar/calendar_header.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_week_grid.dart';
 import 'package:butlery/widgets/menu/calendar/week_range_label.dart';
+import 'package:butlery/widgets/menu/group_fixed_day_widgets.dart';
 import 'package:butlery/widgets/menu/group_menu_dish_sheet.dart';
+import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 
 /// Renders whatever [GroupWeeklyMenuViewModel] sits above it.
 ///
@@ -36,9 +38,13 @@ class GroupWeeklyMenuWidget extends StatefulWidget {
   final String groupName;
   final VoidCallback? onStartPoll;
 
+  /// The chat group behind the conversation; null when it has none (BUT-2490).
+  final String? chatGroupId;
+
   const GroupWeeklyMenuWidget({
     super.key,
     required this.groupName,
+    this.chatGroupId,
     this.onStartPoll,
   });
 
@@ -149,6 +155,12 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
           onNext: vm.goToNextWeek,
         ),
         _FaceRow(vm: vm),
+        if (widget.chatGroupId case final chatGroupId?)
+          GroupRulesBand(
+            vm: vm,
+            chatGroupId: chatGroupId,
+            groupName: widget.groupName,
+          ),
         // Only once a plan document exists: a week nobody has planned yet has
         // `plan == null`, so `canEdit` is false and the banner would tell an
         // admin they may not edit — directly above the prompt asking them to
@@ -172,6 +184,7 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
                   child: CalendarWeekGrid(
                     weekStart: vm.weekStart,
                     todayIndex: todayIndex,
+                    markedDays: vm.rules.ruleDays,
                     cellBuilder: (context, day, slot) =>
                         _cell(context, vm, day, slot),
                   ),
@@ -194,6 +207,15 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         if (e.slot == slot) e,
     ];
     final l10n = context.l10n;
+    final rule = entries.isEmpty ? vm.rules.ruleFor(day, slot) : null;
+    if (rule != null) {
+      return GroupFixedDayCell(
+        rule: rule,
+        onTap: vm.canPickForRule
+            ? () => unawaited(_pickForRule(context, vm, day, slot))
+            : null,
+      );
+    }
     if (entries.isEmpty) {
       final cs = Theme.of(context).colorScheme;
       final plus = SizedBox(
@@ -239,6 +261,21 @@ class _GroupWeeklyMenuWidgetState extends State<GroupWeeklyMenuWidget> {
         onRemove: _remove,
       ),
     );
+  }
+
+  /// A fixed day: the user's own recipes, and the pick lands on the day.
+  Future<void> _pickForRule(
+    BuildContext context,
+    GroupWeeklyMenuViewModel vm,
+    DayOfWeek day,
+    MealSlot slot,
+  ) async {
+    final picked = await RecipeSelectionDialogs.showMenuRecipeSelector(
+      context,
+      categoryName: slot.displayLabel,
+    );
+    if (picked == null || picked.isEmpty || !mounted) return;
+    await vm.addDish(day: day, slot: slot, recipe: picked.first);
   }
 
   Widget _emptyWeek(BuildContext context) {

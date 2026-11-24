@@ -34926,6 +34926,60 @@ abstract class AppLocalizations {
   /// **'Visa'**
   String get recurringRuleShow;
 
+  /// BUT-2490: an empty lunch or middag place in the group week that a group rule governs; kind is the rule's food, e.g. Tacos.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fast dag: {kind}'**
+  String groupMenuFixedDayCell(String kind);
+
+  /// BUT-2490: screen-reader action on a fixed-day cell in the group week; the visible text names the day's rule.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj en rätt'**
+  String get a11yGroupMenuPickFixedDay;
+
+  /// BUT-2490: title of a group's rule list; name is the group's name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fasta dagar · {name}'**
+  String recurringRulesGroupTitle(String name);
+
+  /// No description provided for @recurringRulesGroupSection.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppens regler'**
+  String get recurringRulesGroupSection;
+
+  /// No description provided for @recurringRulesGroupEmptyBodyAdmin.
+  ///
+  /// In sv, this message translates to:
+  /// **'En fast dag visas för alla i gruppens veckomeny, till exempel tacos på fredagar.'**
+  String get recurringRulesGroupEmptyBodyAdmin;
+
+  /// No description provided for @recurringRulesGroupEmptyBodyMember.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppens admin kan lägga till fasta dagar.'**
+  String get recurringRulesGroupEmptyBodyMember;
+
+  /// No description provided for @recurringRulesGroupMemberInfo.
+  ///
+  /// In sv, this message translates to:
+  /// **'Gruppens fasta dagar. Bara admin ändrar dem.'**
+  String get recurringRulesGroupMemberInfo;
+
+  /// No description provided for @recurringRuleEditorNoteGroup.
+  ///
+  /// In sv, this message translates to:
+  /// **'Alla i gruppen ser den här dagen i veckomenyn. Den som får ändra veckomenyn väljer rätten.'**
+  String get recurringRuleEditorNoteGroup;
+
+  /// No description provided for @recurringRulePausedShort.
+  ///
+  /// In sv, this message translates to:
+  /// **'pausad'**
+  String get recurringRulePausedShort;
+
   /// BUT-2494: reminder under a shopping row when the household avoids lactose and the item often contains it. Never names a person.
   ///
   /// In sv, this message translates to:

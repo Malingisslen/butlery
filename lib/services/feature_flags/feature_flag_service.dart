@@ -56,6 +56,9 @@ class FeatureFlagService {
     // ships and the backfill/legal gates clear. Same RC key the server reads.
     'enable_pooled_ratings': false,
 
+    // BUT-2490: a group's fixed days in the group week. Gates the app only.
+    'enable_group_recurring_rules': false,
+
     // Safety Flags (kill switches)
     'enable_social_features': true,
     'enable_sharing': true,
@@ -493,6 +496,9 @@ abstract final class FeatureFlags {
   // and the menu aggregate that reads one both sit behind this flag.
   static const enableHouseholdAllergenSharing =
       'enable_household_allergen_sharing';
+  // A group's fixed days (BUT-2490): the group week's band, marks and cells,
+  // and the group scope of the rule screens. Gates the app, not the callable.
+  static const enableGroupRecurringRules = 'enable_group_recurring_rules';
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;
   // see the defaults map above for the chain and the measured result.
   static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';

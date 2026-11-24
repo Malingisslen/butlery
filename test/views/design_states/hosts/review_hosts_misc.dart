@@ -14,6 +14,7 @@ import 'package:butlery/models/profile_lookup.dart';
 import 'package:butlery/models/unified/unified_shopping_list.dart'
     show SharedListPermission;
 import 'package:butlery/models/menu/group_weekly_menu_plan.dart';
+import 'package:butlery/models/menu/recurring_day_rule.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/messaging/chat_group.dart';
 import 'package:butlery/models/messaging/conversation.dart';
@@ -30,6 +31,7 @@ import 'package:butlery/repositories/interfaces/diner_profile_repository.dart';
 import 'package:butlery/repositories/interfaces/household_repository.dart';
 import 'package:butlery/services/family/family_rating_service.dart';
 import 'package:butlery/services/family/household_roster_service.dart';
+import 'package:butlery/services/feature_flags/feature_flag_service.dart';
 import 'package:butlery/services/menu/group_weekly_menu_plan_service.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/messaging_service.dart';
@@ -67,6 +69,8 @@ class _MockGroupPlans extends Mock implements GroupWeeklyMenuPlanService {}
 class _MockGroupRealtime extends Mock implements RealtimeGroupMenuModule {}
 
 class _MockUsers extends Mock implements UserService {}
+
+class _MockFlags extends Mock implements FeatureFlagService {}
 
 class _MockRecipes extends Mock implements UnifiedRecipeService {}
 
@@ -265,10 +269,42 @@ final reviewMiscHosts = <String, StateHost>{
       TestServiceLocator.registerMock<GroupWeeklyMenuPlanService>(service);
       TestServiceLocator.registerMock<RealtimeGroupMenuModule>(realtime);
       TestServiceLocator.registerMock<UserService>(users);
+      // A fixed Friday (BUT-2490): the empty Fre middag shows "Fast dag: Tacos"
+      // and the band counts the rule.
+      final flags = _MockFlags();
+      when(() => flags.isEnabled(any())).thenReturn(true);
+      TestServiceLocator.registerMock<FeatureFlagService>(flags);
+      final chatGroups = MockChatGroupRepository();
+      when(() => chatGroups.watchGroup('chat-g1')).thenAnswer(
+        (_) => Stream.value(
+          ChatGroup(
+            id: 'chat-g1',
+            name: 'Torsdagsklubben',
+            memberIds: [_me],
+            adminIds: [_me],
+            memberDisplayNames: const {_me: 'Malin'},
+            memberAvatarUrls: const {},
+            conversationId: 'g1',
+            createdBy: _me,
+            createdAt: DateTime.utc(2026, 1, 1),
+            updatedAt: DateTime.utc(2026, 1, 1),
+            recurringDayRules: [
+              RecurringDayRule.create(
+                day: DayOfWeek.fri,
+                meal: MealSlot.middag,
+                food: RecurringFood.tacos,
+              ),
+            ],
+          ),
+        ),
+      );
+      TestServiceLocator.registerMock<ChatGroupRepository>(chatGroups);
       return GroupWeeklyMenuView(
         groupId: 'g1',
         groupName: 'Torsdagsklubben',
         currentUserId: _me,
+        chatGroupId: 'chat-g1',
+        participantIds: const [_me],
         onStartPoll: () {},
       );
     },

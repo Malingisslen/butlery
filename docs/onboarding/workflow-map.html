@@ -375,7 +375,7 @@
       "id": "vm-recurring-day-rules",
       "label": "RecurringDayRulesViewModel",
       "context": "viewmodel",
-      "path": "lib/viewmodels/recurring_day_rules_viewmodel.dart"
+      "path": "lib/viewmodels/recurring_day_rules_viewmodel.dart, lib/viewmodels/recurring_day_rules/recurring_day_rule_store.dart"
     },
     {
       "id": "v-menu-wishes",
@@ -2566,6 +2566,48 @@
       "label": "Blockera gruppmedlem-dialog",
       "context": "view",
       "path": "lib/widgets/messaging/dialogs/block_group_member_dialog.dart"
+    },
+    {
+      "id": "v-group-weekly-menu",
+      "label": "Gruppens veckomeny",
+      "context": "view",
+      "path": "lib/views/group_weekly_menu_view.dart, lib/widgets/menu/group_weekly_menu_widget.dart, lib/widgets/menu/group_fixed_day_widgets.dart"
+    },
+    {
+      "id": "vm-group-weekly-menu",
+      "label": "GroupWeeklyMenuViewModel + GroupWeekRules",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/menu/group_weekly_menu_viewmodel.dart, lib/viewmodels/menu/group_weekly_menu/group_week_rules.dart"
+    },
+    {
+      "id": "svc-group-weekly-menu-plan",
+      "label": "GroupWeeklyMenuPlanService",
+      "context": "service",
+      "path": "lib/services/menu/group_weekly_menu_plan_service.dart"
+    },
+    {
+      "id": "repo-group-weekly-menu-plan",
+      "label": "GroupWeeklyMenuPlanRepository",
+      "context": "repository",
+      "path": "lib/repositories/firebase/firebase_group_weekly_menu_plan_repository.dart"
+    },
+    {
+      "id": "ds-group-weekly-menu-plans",
+      "label": "group_weekly_menu_plans",
+      "context": "datastore",
+      "path": "Firestore: group_weekly_menu_plans collection"
+    },
+    {
+      "id": "cf-set-group-recurring-day-rules",
+      "label": "setGroupRecurringDayRules",
+      "context": "cloud-function",
+      "path": "functions/src/groups/set-group-recurring-day-rules.ts"
+    },
+    {
+      "id": "cf-group-minor-backstop",
+      "label": "enforceGroupMinorMembership (backstop)",
+      "context": "cloud-function",
+      "path": "functions/src/messaging/enforce-group-minor-membership.ts"
     }
   ],
   "actions": [
@@ -2870,8 +2912,8 @@
     },
     {
       "id": "flow2-fixed-days",
-      "label": "spara fasta dagar (veckomenyns regler)",
-      "description": "BUT-2490: ”Fasta dagar” är sparade veckoregler (t.ex. fisk på fredagar) som veckomenyns generering lägger in som fastnålade dagar. Listan nås från bandet överst i veckomenyn (RecurringRulesEntryBand) och redigeraren öppnas från listan; båda delar RecurringDayRulesViewModel. Reglerna lagras som fältet recurringDayRules i users/{uid}/settings/preferences och skrivs med ett eget set(merge) — aldrig med en hel profilsparning, eftersom skrivningen ersätter hela listan. UserSettingsWriter vägrar skriva om inställningarna inte lästs in (settingsMerged), så en standardlista aldrig raderar användarens regler (BUT-1663). Misslyckas sparningen returneras false, profilen behåller sina regler och skärmen säger att det inte sparades. Regelgränsen (RecurringDayRules.maxRules) prövas i ViewModel före skrivning.",
+      "label": "spara fasta dagar (veckomenyns regler, egna och gruppens)",
+      "description": "BUT-2490: ”Fasta dagar” är sparade veckoregler (t.ex. fisk på fredagar) som veckomenyns generering lägger in som fastnålade dagar. Listan nås från bandet överst i veckomenyn (RecurringRulesEntryBand) och redigeraren öppnas från listan; båda delar RecurringDayRulesViewModel. Reglerna lagras som fältet recurringDayRules i users/{uid}/settings/preferences och skrivs med ett eget set(merge) — aldrig med en hel profilsparning, eftersom skrivningen ersätter hela listan. UserSettingsWriter vägrar skriva om inställningarna inte lästs in (settingsMerged), så en standardlista aldrig raderar användarens regler (BUT-1663). Misslyckas sparningen returneras false, profilen behåller sina regler och skärmen säger att det inte sparades. Regelgränsen (RecurringDayRules.maxRules) prövas i ViewModel före skrivning. Gruppens fasta dagar (BUT-2490, bakom enable_group_recurring_rules) ligger som recurringDayRules på chat_groups/{id}: gruppens veckomeny läser dokumentet via ChatGroupWatch (en läsning, ingen om konversationen saknar groupId), visar bandet, dagmarkeringen och ”Fast dag: Tacos” i en tom lunch- eller middagsruta, och skriver ingenting själv. Bara gruppens admin sparar regler: RecurringDayRulesViewModel vägrar skriva när GroupRuleStore.canEdit är falskt och anropar annars callablen setGroupRecurringDayRules, som är den riktiga grinden. Den som får ändra veckan trycker på en fast dag, väljer en rätt ur sina egna recept och GroupWeeklyMenuPlanService.addEntry (proposedBy null, spårhandling ’added’) lägger den på dagen; saknas veckan byggs den med readOrBuildWeek och alla i konversationen som redigerare, byggaren som admin.",
       "steps": [
         {
           "from": "v-veckomeny",
@@ -2913,6 +2955,76 @@
           "to": "vm-recurring-day-rules",
           "payload": "true efter lyckad skrivning; den inlästa profilen uppdateras (copyWith recurringDayRules) och lyssnare notifieras, så listan och bandets antal ritas om. false vid fel",
           "transport": "in-memory return",
+          "verified": true
+        },
+        {
+          "from": "v-group-weekly-menu",
+          "to": "v-recurring-day-rules",
+          "payload": "gruppens band (GroupRulesBand, syns för admin alltid och för medlem bara när gruppen har regler) → RecurringDayRulesView med RecurringRuleScope.group; en medlem ser raderna utan brytare och svep",
+          "transport": "navigation",
+          "verified": true
+        },
+        {
+          "from": "vm-recurring-day-rules",
+          "to": "repo-chat-group",
+          "payload": "GroupRuleStore.write(rules) → setRecurringDayRules(chatGroupId, rules); en medlem (canEdit falskt) når aldrig hit, och ett nätverksfel ger sparandefel utan kö",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-chat-group",
+          "to": "cf-set-group-recurring-day-rules",
+          "payload": "callable setGroupRecurringDayRules {groupId, rules}: admin i lagrad adminIds, varje rad valideras och byggs om innan den skrivs",
+          "transport": "callable",
+          "verified": true
+        },
+        {
+          "from": "cf-set-group-recurring-day-rules",
+          "to": "ds-chat-groups",
+          "payload": "chat_groups/{id}.recurringDayRules (bara det fältet, ingen updatedAt)",
+          "transport": "Firestore write",
+          "verified": true
+        },
+        {
+          "from": "ds-chat-groups",
+          "to": "cf-group-minor-backstop",
+          "payload": "onDocumentWritten kör på varje skrivning men återvänder innan någon läsning när memberIds och memberAddedBy är oförändrade",
+          "transport": "trigger",
+          "verified": true
+        },
+        {
+          "from": "ds-chat-groups",
+          "to": "vm-group-weekly-menu",
+          "payload": "ChatGroupWatch.watchGroup(chatGroupId): en läsning vid öppning och en per senare skrivning; GroupWeekRules ger ruleFor(dag, måltid), ruleDays och isGroupAdmin",
+          "transport": "Firestore stream",
+          "verified": true
+        },
+        {
+          "from": "v-group-weekly-menu",
+          "to": "vm-group-weekly-menu",
+          "payload": "tryck på en tom fast dag (bara den som får ändra veckan, eller vem som helst för en vecka ingen planerat) → receptväljaren → addDish(day, slot, recipe)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-group-weekly-menu",
+          "to": "svc-group-weekly-menu-plan",
+          "payload": "readOrBuildWeek (bara utan plan, med seedad roll-lista) → addEntry(proposedBy: null) → save; en ruta en kollega hunnit fylla lämnas orörd",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-group-weekly-menu-plan",
+          "to": "repo-group-weekly-menu-plan",
+          "payload": "save(plan, userId) — den granskade skrivningen (ADR-0010)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-group-weekly-menu-plan",
+          "to": "ds-group-weekly-menu-plans",
+          "payload": "group_weekly_menu_plans/{conversationId}_{år}-W{vecka}: posten, spårraden ’added’ och contributorUserIds",
+          "transport": "Firestore write",
           "verified": true
         }
       ],
