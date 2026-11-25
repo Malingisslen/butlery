@@ -43,6 +43,8 @@ void main() {
     await BaseUnitTest.setupUnitWithProductionLocator();
     registerFallbackValue(_box('fallback'));
     registerFallbackValue(<String>[]);
+    registerFallbackValue(MealBoxLocation.fridge);
+    registerFallbackValue(DateTime(2026));
   });
 
   tearDownAll(() async {
@@ -169,5 +171,111 @@ void main() {
 
     verify(() => repo.delete('stale')).called(1);
     expect(shown.single.id, 'stale');
+  });
+
+  group('writes (part 5b)', () {
+    test('a blank title is refused before anything is written', () async {
+      final blank = MealBox(
+        id: '',
+        recipeTitle: '   ',
+        location: MealBoxLocation.fridge,
+        storedOn: DateTime(2026, 1, 10),
+        count: 2,
+      );
+
+      await expectLater(service.add(blank), throwsArgumentError);
+      verifyNever(() => repo.add(any()));
+    });
+
+    test('add returns the id the repository gave', () async {
+      when(() => repo.add(any())).thenAnswer((_) async => 'new-id');
+
+      expect(await service.add(_box('x', count: 2)), 'new-id');
+    });
+
+    test('setRemaining keeps the boxes planned lunches take', () async {
+      when(() => repo.setCount(any(), any())).thenAnswer((_) async {});
+      final box = _box('a', count: 5, takes: {'2026-01-12': 2});
+
+      await service.setRemaining(box, 2);
+
+      verify(() => repo.setCount('a', 4)).called(1);
+    });
+
+    test('setRemaining never stores more than the rules allow', () async {
+      when(() => repo.setCount(any(), any())).thenAnswer((_) async {});
+      final box = _box('a', count: 99, takes: {'2026-01-12': 3});
+
+      await service.setRemaining(box, 99);
+
+      verify(() => repo.setCount('a', MealBox.maxCount)).called(1);
+    });
+
+    test('a refused count reaches the caller', () async {
+      when(() => repo.setCount(any(), any())).thenThrow(StateError('denied'));
+
+      await expectLater(service.setCount('a', 1), throwsStateError);
+    });
+
+    test(
+      'a date in the future is refused before anything is written',
+      () async {
+        await expectLater(
+          withClock(
+            Clock.fixed(today),
+            () => service.setStoredOn('a', today.add(const Duration(days: 1))),
+          ),
+          throwsArgumentError,
+        );
+        verifyNever(() => repo.setStoredOn(any(), any()));
+      },
+    );
+
+    test('a box with nothing left is not moved', () async {
+      final box = _box('a', count: 2, takes: {'2026-01-12': 2});
+
+      await expectLater(
+        service.move(box, MealBoxLocation.freezer),
+        throwsArgumentError,
+      );
+      verifyNever(() => repo.move(any(), any(), any()));
+    });
+
+    test('a box is not moved to where it already is', () async {
+      await expectLater(
+        service.move(_box('a', count: 2), MealBoxLocation.fridge),
+        throwsArgumentError,
+      );
+    });
+
+    test('a move is dated today and returns the new id', () async {
+      when(() => repo.move(any(), any(), any())).thenAnswer((_) async => 'b');
+      final box = _box('a', count: 2);
+
+      final id = await withClock(
+        Clock.fixed(today),
+        () => service.move(box, MealBoxLocation.freezer),
+      );
+
+      expect(id, 'b');
+      verify(() => repo.move(box, MealBoxLocation.freezer, today)).called(1);
+    });
+
+    test('a refused delete reaches the caller', () async {
+      when(() => repo.delete(any())).thenThrow(StateError('denied'));
+
+      await expectLater(service.remove('a'), throwsStateError);
+    });
+  });
+
+  test('shown hides a box with nothing left and no lunch planned', () {
+    final emptied = _box('empty');
+    final planned = _box('planned', takes: {'2026-01-12': 1});
+    final full = _box('full', count: 2);
+
+    expect(
+      MealBoxService.shown([emptied, planned, full]).map((b) => b.id),
+      ['planned', 'full'],
+    );
   });
 }
