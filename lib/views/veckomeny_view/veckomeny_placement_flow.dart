@@ -241,20 +241,23 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
   void showAutoPlacedToast(int placed) {
     final calendarVm = context.read<WeeklyMenuPlanViewModel>();
     final boxes = calendarVm.lastStockLunchCount;
-    if (calendarVm.lastStockLunchReadFailed) {
-      SnackBarUtils.showInfo(context, context.l10n.menuStockLunchesUnreadable);
-    }
-    if (placed == 0 && boxes == 0) return;
     final l10n = context.l10n;
-    UndoSnackBar.capture(context).showReceipt(
-      boxes == 0
-          ? l10n.menuAutoPlacedToast(placed)
-          : placed == 0
-          ? l10n.menuAutoPlacedBoxesOnlyToast(boxes)
-          : l10n.menuAutoPlacedWithBoxesToast(placed, boxes),
-      actionLabel: context.l10n.menuAutoPlacedChangeAction,
-      onAction: () => unawaited(openPlacement(redoAuto: true)),
-    );
+    // The receipt clears the snackbars, so the unreadable line queues
+    // behind it instead of going first.
+    if (placed > 0 || boxes > 0) {
+      UndoSnackBar.capture(context).showReceipt(
+        boxes == 0
+            ? l10n.menuAutoPlacedToast(placed)
+            : placed == 0
+            ? l10n.menuAutoPlacedBoxesOnlyToast(boxes)
+            : l10n.menuAutoPlacedWithBoxesToast(placed, boxes),
+        actionLabel: l10n.menuAutoPlacedChangeAction,
+        onAction: () => unawaited(openPlacement(redoAuto: true)),
+      );
+    }
+    if (calendarVm.lastStockLunchReadFailed) {
+      SnackBarUtils.showInfo(context, l10n.menuStockLunchesUnreadable);
+    }
   }
 
   /// Opens the manual placement mode (BUT-1241). [redoAuto] is the ÄNDRA

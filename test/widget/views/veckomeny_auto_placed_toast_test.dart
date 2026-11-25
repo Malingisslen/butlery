@@ -127,4 +127,17 @@ void main() {
     expect(text(_sv.menuStockLunchesUnreadable), findsOneWidget);
     expect(find.byType(SnackBar), findsOneWidget);
   });
+
+  testWidgets('boxes that could not be read are still said after a dish '
+      'receipt', (tester) async {
+    when(() => vm.lastStockLunchReadFailed).thenReturn(true);
+    await announce(tester, placed: 3);
+
+    expect(text(_sv.menuAutoPlacedToast(3)), findsOneWidget);
+    ScaffoldMessenger.of(
+      tester.element(find.byType(SnackBar)),
+    ).hideCurrentSnackBar();
+    await tester.pumpAndSettle();
+    expect(text(_sv.menuStockLunchesUnreadable), findsOneWidget);
+  });
 }
