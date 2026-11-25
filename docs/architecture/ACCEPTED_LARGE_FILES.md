@@ -180,7 +180,7 @@ UI files that are already extracted or represent cohesive single-screen implemen
 | `recipe_parser_service.dart` | 802 | Multi-tier recipe text parsing pipeline |
 | `recipe_list_viewmodel.dart` | 1,323 | Recipe list with filtering, search, tags |
 | `recipe_detail_view.dart` | 1386 | Recipe detail screen (source-artefact sheet in recipe_detail/recipe_source_artefact_sheet.dart, sticky action bar in recipe_detail/recipe_action_bar.dart) |
-| `weekly_menu_plan_viewmodel.dart` | 1699 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975) |
+| `weekly_menu_plan_viewmodel.dart` | 1781 | Weekly-menu VM: the week read, the write paths, the optimistic-publish/rollback pair and the overflow tray. The write paths split cleanly into a manager if it grows further (BUT-1975); the suggested week's fridge and freezer boxes are read and planned in `stock_lunch_fill.dart`, leaving the VM only the wiring (BUT-2486 part 6) |
 | `personal_tag_viewmodel.dart` | 792 | Personal tag management VM |
 | `recipe_detail_content.dart` | 980 | Body content widget for recipe detail |
 | `butlery_top_bar.dart` | 697 | The shared top bar; a split is not yet designed (BUT-2394) |

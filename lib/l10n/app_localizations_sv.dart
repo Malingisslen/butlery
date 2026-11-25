@@ -23285,4 +23285,43 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get mealBoxDateFailed => 'Kunde inte ändra datumet';
+
+  @override
+  String get menuLunchboxDaysTitle => 'Matlåda till lunch';
+
+  @override
+  String get menuLunchboxDaysHint =>
+      'Förslaget tar lådor ur kylen först, sedan frysen, äldst först. Kyllådor äldre än 5 dagar hoppas över.';
+
+  @override
+  String menuAutoPlacedWithBoxesToast(int count, int boxes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recept',
+      one: '1 recept',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: '$boxes matlådor',
+      one: '1 matlåda',
+    );
+    return '$_temp0 och $_temp1 placerade i kalendern';
+  }
+
+  @override
+  String menuAutoPlacedBoxesOnlyToast(int boxes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: '$boxes matlådor placerade',
+      one: '1 matlåda placerad',
+    );
+    return '$_temp0 i kalendern';
+  }
+
+  @override
+  String get menuStockLunchesUnreadable =>
+      'Kyl och frys kunde inte läsas, så inga matlådor lades in.';
 }

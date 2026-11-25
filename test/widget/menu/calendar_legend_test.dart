@@ -10,11 +10,14 @@ import 'package:mocktail/mocktail.dart';
 import 'package:butlery/l10n/app_localizations.dart';
 import 'package:butlery/l10n/app_localizations_sv.dart';
 import 'package:butlery/models/household_roster_member.dart';
+import 'package:butlery/models/menu/lunchbox_plan.dart';
 import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/menu/weekly_allergen_marks.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_cells.dart';
 import 'package:butlery/widgets/menu/calendar/calendar_markers.dart';
+import 'package:butlery/widgets/menu/calendar/calendar_slot_cells.dart';
 
 class _MockVm extends Mock implements WeeklyMenuPlanViewModel {}
 
@@ -23,7 +26,10 @@ class _FakeEntry extends Fake implements WeeklyMenuPlanEntry {}
 final _sv = AppLocalizationsSv();
 
 void main() {
-  setUpAll(() => registerFallbackValue(_FakeEntry()));
+  setUpAll(() {
+    registerFallbackValue(_FakeEntry());
+    registerFallbackValue(DayOfWeek.mon);
+  });
 
   late _MockVm vm;
 
@@ -34,6 +40,9 @@ void main() {
     when(() => vm.isSelected(any())).thenReturn(false);
     when(() => vm.isAllergenUnsafe(any())).thenReturn(false);
     when(() => vm.placementOrderOf(any())).thenReturn(null);
+    when(() => vm.isLunchboxRecentlyPlaced(any())).thenReturn(false);
+    when(() => vm.lunchboxVerdict(any())).thenReturn(LunchboxVerdict.safe);
+    when(() => vm.lunchboxTitle(any())).thenReturn('Lasagne');
     when(() => vm.entryTitle(any())).thenAnswer(
       (i) => (i.positionalArguments.first as WeeklyMenuPlanEntry).recipeTitle,
     );
@@ -46,6 +55,7 @@ void main() {
 
   WeeklyMenuPlan plan({
     Map<DayOfWeek, Map<MealSlot, List<String>>>? presence,
+    Map<DayOfWeek, Lunchbox> lunchboxes = const {},
   }) => WeeklyMenuPlan(
     id: 'u1_2026-W16',
     userId: 'u1',
@@ -61,6 +71,7 @@ void main() {
     createdAt: DateTime.utc(2026, 4, 13),
     updatedAt: DateTime.utc(2026, 4, 13),
     presenceBySlot: presence ?? const {},
+    lunchboxes: lunchboxes,
   );
 
   Future<void> pump(WidgetTester tester, WeeklyMenuPlan plan) async {
@@ -134,5 +145,47 @@ void main() {
     expect(find.text(_sv.weeklyMenuLegendPresence), findsOneWidget);
     expect(find.text(_sv.weeklyMenuLegendNew), findsNothing);
     expect(find.text(_sv.weeklyMenuLegendAllergen), findsNothing);
+  });
+
+  // BUT-2486 part 6: a box the suggested week placed is new like a dish is.
+  group('a lunchbox the latest suggestion placed', () {
+    const box = Lunchbox(
+      source: LunchboxSource.suggestion,
+      recipeId: 'r-box',
+      recipeTitle: 'Lasagne',
+      mealBoxId: 'box-1',
+    );
+    final boxes = {DayOfWeek.wed: box, DayOfWeek.thu: box};
+
+    testWidgets('is marked new on its own day, and the legend names "ny"', (
+      tester,
+    ) async {
+      when(
+        () => vm.isLunchboxRecentlyPlaced(DayOfWeek.wed),
+      ).thenReturn(true);
+      await pump(tester, plan(lunchboxes: boxes));
+
+      expect(find.text(_sv.weeklyMenuLegendNew), findsOneWidget);
+      expect(find.byKey(CalendarLunchboxMark.markKey), findsNWidgets(2));
+      final dot = find.byKey(CalendarNewDot.dotKey);
+      expect(dot, findsOneWidget);
+      final cell = tester.widget<CalendarDishCell>(
+        find.ancestor(of: dot, matching: find.byType(CalendarDishCell)),
+      );
+      expect(
+        cell.semanticsLabel,
+        _sv.a11yLunchboxOpen(DayOfWeek.wed.displayLabel),
+      );
+    });
+
+    testWidgets('placed earlier is not marked and adds no "ny"', (
+      tester,
+    ) async {
+      await pump(tester, plan(lunchboxes: boxes));
+
+      expect(find.byKey(CalendarLunchboxMark.markKey), findsNWidgets(2));
+      expect(find.byKey(CalendarNewDot.dotKey), findsNothing);
+      expect(find.text(_sv.weeklyMenuLegendNew), findsNothing);
+    });
   });
 }

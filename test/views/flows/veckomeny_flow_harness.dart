@@ -47,6 +47,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/user_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/theme/app_theme.dart';
+import 'package:butlery/viewmodels/menu/stock_lunch_fill.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/views/veckomeny_view.dart';
 import 'package:butlery/widgets/common/buttons/hero_button.dart';
@@ -238,6 +239,7 @@ class VeckomenyFlowHarness {
   Future<void> setUp({
     List<Recipe>? library,
     Future<Map<String, Set<String>>> Function()? readDislikes,
+    StockLunchFill stockLunchFill = const StockLunchFill(),
   }) async {
     SharedPreferences.setMockInitialValues({});
     await TestServiceLocator.initialize();
@@ -309,6 +311,7 @@ class VeckomenyFlowHarness {
         recipeService: recipes,
         shoppingListGenerator: MenuShoppingListGenerator(links: _flowLinks()),
         readDislikes: readDislikes,
+        stockLunchFill: stockLunchFill,
       ),
     );
   }

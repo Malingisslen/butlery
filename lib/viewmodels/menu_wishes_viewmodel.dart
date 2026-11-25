@@ -1,7 +1,13 @@
+import 'dart:async';
+
+import 'package:butlery/core/di/meal_box_feature_from_locator.dart';
 import 'package:butlery/core/l10n/app_locale.dart';
 import 'package:butlery/core/mixins/error_handling_mixin.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/menu/menu_wish.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/services/menu/lunchbox_days_store.dart';
+import 'package:butlery/services/permission_service.dart';
 import 'package:butlery/services/user_service/user_service_roles.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:clock/clock.dart';
@@ -13,15 +19,58 @@ class MenuWishesViewModel extends BaseViewModel with ErrorHandlingMixin {
     OwnProfileReader? reader,
     OwnProfileEditor? editor,
     String Function()? newId,
-  }) : _reader = reader ?? ServiceLocator.get<OwnProfileReader>(),
+    String? Function()? currentUserId,
+    LunchboxDaysStore lunchboxDaysStore = const LunchboxDaysStore(),
+    bool Function()? mealBoxesOn,
+  }) : offersLunchboxDays = (mealBoxesOn ?? mealBoxesEnabled)(),
+       _reader = reader ?? ServiceLocator.get<OwnProfileReader>(),
        _editor = editor ?? ServiceLocator.get<OwnProfileEditor>(),
-       _newId = newId ?? _timeId {
+       _newId = newId ?? _timeId,
+       _currentUserId = currentUserId ?? _liveUserId,
+       _daysStore = lunchboxDaysStore {
     _reader.addListener(notifyListeners);
+    if (offersLunchboxDays) unawaited(_loadLunchboxDays());
   }
 
   final OwnProfileReader _reader;
   final OwnProfileEditor _editor;
   final String Function() _newId;
+  final String? Function() _currentUserId;
+  final LunchboxDaysStore _daysStore;
+
+  static String? _liveUserId() =>
+      ServiceLocator.tryGet<PermissionService>()?.currentUserId;
+
+  Set<DayOfWeek> _lunchboxDays = const {};
+  bool _lunchboxDaysTouched = false;
+
+  /// Whether the empty state shows the lunchbox days: the meal-box switch,
+  /// read once when the week menu opens.
+  final bool offersLunchboxDays;
+
+  /// BUT-2486 part 6: the weekdays the suggested week fills with fridge and
+  /// freezer boxes, remembered on this device from last week.
+  Set<DayOfWeek> get lunchboxDays => _lunchboxDays;
+
+  void toggleLunchboxDay(DayOfWeek day) {
+    _lunchboxDaysTouched = true;
+    final next = {..._lunchboxDays};
+    if (!next.remove(day)) next.add(day);
+    _lunchboxDays = Set.unmodifiable(next);
+    notifyListeners();
+    final uid = _currentUserId();
+    if (uid != null) unawaited(_daysStore.write(uid, _lunchboxDays));
+  }
+
+  Future<void> _loadLunchboxDays() async {
+    final uid = _currentUserId();
+    if (uid == null) return;
+    final days = await _daysStore.read(uid);
+    // A tap while the read was out wins over the stored choice.
+    if (isDisposed || _lunchboxDaysTouched) return;
+    _lunchboxDays = Set.unmodifiable(days);
+    notifyListeners();
+  }
 
   static String _timeId() => 'w${clock.now().microsecondsSinceEpoch}';
 

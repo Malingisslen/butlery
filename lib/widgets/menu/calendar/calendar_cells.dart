@@ -92,7 +92,9 @@ class CalendarWeekTable extends StatelessWidget {
         onTapLunchbox: onTapLunchbox,
       ).cell(context, slot),
       footer: CalendarLegend(
-        showNew: entries.any((e) => vm.isRecentlyPlaced(e.id)),
+        showNew:
+            entries.any((e) => vm.isRecentlyPlaced(e.id)) ||
+            plan.lunchboxes.keys.any(vm.isLunchboxRecentlyPlaced),
         showAllergen:
             entries.any((e) => vm.isAllergenUnsafe(e.id)) ||
             boxVerdicts.contains(LunchboxVerdict.unsafe),
@@ -217,6 +219,7 @@ class _DayCells {
     return CalendarDishCell(
       title: vm.lunchboxTitle(day) ?? l10n.lunchboxNoDish,
       marks: CalendarCellMarks(
+        isNew: vm.isLunchboxRecentlyPlaced(day),
         lunchbox: true,
         allergenUnsafe: verdict == LunchboxVerdict.unsafe,
         unjudged: verdict == LunchboxVerdict.unjudged,
