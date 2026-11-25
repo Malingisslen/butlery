@@ -14,6 +14,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/models/pantry/pantry_item.dart';
 import 'package:butlery/theme/app_dimensions.dart';
+import 'package:butlery/viewmodels/pantry/meal_boxes_viewmodel.dart';
 import 'package:butlery/viewmodels/pantry/pantry_selection_manager.dart';
 import 'package:butlery/viewmodels/pantry/pantry_viewmodel.dart';
 import 'package:butlery/views/pantry/add_pantry_item_sheet.dart';
@@ -24,6 +25,8 @@ import 'package:butlery/widgets/common/list/section_band.dart';
 import 'package:butlery/widgets/common/buttons/saffron_square_button.dart';
 import 'package:butlery/widgets/common/selection_bulk_bar.dart';
 import 'package:butlery/widgets/common/sheets/butlery_sheet.dart';
+import 'package:butlery/widgets/pantry/meal_boxes/meal_box_ui.dart';
+import 'package:butlery/widgets/pantry/meal_boxes/meal_boxes_block.dart';
 
 class PantryView extends StatefulWidget {
   /// [viewModel] and [selection] come from the view that hosts the pantry
@@ -46,6 +49,8 @@ class _PantryViewState extends State<PantryView> {
   late final PantrySelectionManager _selection;
   late final bool _ownsViewModel;
   late final bool _ownsSelection;
+  // Only made when the meal-box flag is on, so nothing reads meal_boxes off.
+  MealBoxesViewModel? _boxesVm;
 
   @override
   void initState() {
@@ -54,8 +59,11 @@ class _PantryViewState extends State<PantryView> {
     _ownsSelection = widget.selection == null;
     _vm = widget.viewModel ?? ServiceLocator.get<PantryViewModel>();
     _selection = widget.selection ?? PantrySelectionManager();
+    if (mealBoxesEnabled()) _boxesVm = MealBoxesViewModel();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) _vm.loadPantry();
+      if (!mounted) return;
+      _vm.loadPantry();
+      _boxesVm?.load();
     });
   }
 
@@ -63,6 +71,7 @@ class _PantryViewState extends State<PantryView> {
   void dispose() {
     if (_ownsSelection) _selection.dispose();
     if (_ownsViewModel) _vm.dispose();
+    _boxesVm?.dispose();
     super.dispose();
   }
 
@@ -73,13 +82,15 @@ class _PantryViewState extends State<PantryView> {
         ChangeNotifierProvider<PantryViewModel>.value(value: _vm),
         ChangeNotifierProvider<PantrySelectionManager>.value(value: _selection),
       ],
-      child: const _PantryViewContent(),
+      child: _PantryViewContent(mealBoxes: _boxesVm),
     );
   }
 }
 
 class _PantryViewContent extends StatelessWidget {
-  const _PantryViewContent();
+  const _PantryViewContent({required this.mealBoxes});
+
+  final MealBoxesViewModel? mealBoxes;
 
   @override
   Widget build(BuildContext context) {
@@ -91,24 +102,7 @@ class _PantryViewContent extends StatelessWidget {
         Column(
           children: [
             LayoutComponents.offlineIndicator(),
-            Expanded(
-              child: LoadingStateBuilder<List<PantryItem>>(
-                isLoading: viewModel.isLoading,
-                loadingMessage: context.l10n.loadingPantry,
-                error: viewModel.error,
-                data: viewModel.items,
-                onErrorRetry: () {
-                  viewModel.clearError();
-                  viewModel.loadPantry();
-                },
-                emptyBuilder: (context) => StateWidget.empty(
-                  variant: EmptyStateVariant.noPantryItems,
-                  actionLabel: context.l10n.pantryAddIngredient,
-                  onAction: () => _showAddSheet(context, viewModel),
-                ),
-                builder: (context, items) => const _PantrySections(),
-              ),
-            ),
+            Expanded(child: _body(context, viewModel)),
           ],
         ),
         // BUT-948: in selection mode a contextual bulk bar replaces the add FAB.
@@ -138,6 +132,47 @@ class _PantryViewContent extends StatelessWidget {
               ),
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _body(BuildContext context, PantryViewModel viewModel) {
+    final boxes = mealBoxes;
+    final hasRows =
+        !viewModel.isLoading &&
+        viewModel.error == null &&
+        viewModel.items.isNotEmpty;
+    // The block belongs to every pantry state, so it never sits inside the
+    // state widget that replaces the body.
+    if (boxes != null && hasRows) {
+      return _PantrySections(header: MealBoxesBlock(viewModel: boxes));
+    }
+    final state = LoadingStateBuilder<List<PantryItem>>(
+      isLoading: viewModel.isLoading,
+      loadingMessage: context.l10n.loadingPantry,
+      error: viewModel.error,
+      data: viewModel.items,
+      onErrorRetry: () {
+        viewModel.clearError();
+        viewModel.loadPantry();
+      },
+      emptyBuilder: (context) => StateWidget.empty(
+        variant: EmptyStateVariant.noPantryItems,
+        actionLabel: context.l10n.pantryAddIngredient,
+        onAction: () => _showAddSheet(context, viewModel),
+      ),
+      builder: (context, items) => const _PantrySections(),
+    );
+    if (boxes == null) return state;
+    return Column(
+      children: [
+        Flexible(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.only(top: AppDimensions.space16),
+            child: MealBoxesBlock(viewModel: boxes),
+          ),
+        ),
+        Expanded(child: state),
       ],
     );
   }
@@ -183,7 +218,10 @@ class _PantryViewContent extends StatelessWidget {
 }
 
 class _PantrySections extends StatelessWidget {
-  const _PantrySections();
+  const _PantrySections({this.header});
+
+  /// Drawn first in the list, above the raw pantry headings.
+  final Widget? header;
 
   @override
   Widget build(BuildContext context) {
@@ -210,6 +248,7 @@ class _PantrySections extends StatelessWidget {
         bottom: AppDimensions.fabClearance,
       ),
       children: [
+        ?header,
         if (expiring.isNotEmpty)
           _PantrySection(
             key: const ValueKey('pantry-section-expiring'),
