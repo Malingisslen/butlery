@@ -10,7 +10,8 @@
  *
  * Every write map below is the one the app sends
  * (`FirebaseMealBoxRepository.toFirestore`, `takeWriteMap`, `setCount`,
- * `foldTakes`), so a refusal here is a refusal in production.
+ * `foldTakes`, `restoreWriteMap`, `setStoredOn`, `move`, `undoMove`), so a
+ * refusal here is a refusal in production.
  *
  * Prerequisite: Firestore emulator running locally
  *   (`firebase emulators:start --only firestore`).
@@ -150,6 +151,86 @@ test("eaten lunches are folded into the count", async () => {
         "takes.2026-11-20": deleteField(),
         "updatedAt": serverTimestamp(),
       }),
+  );
+});
+
+/** `FirebaseMealBoxRepository.restoreWriteMap`, written with a plain set. */
+function restored(): Record<string, unknown> {
+  return {
+    recipeId: "recipe-1",
+    recipeTitle: "Chili",
+    location: "fridge",
+    storedOn: new Date(),
+    count: 3,
+    takes: { "2026-11-20": 1 },
+    updatedAt: serverTimestamp(),
+  };
+}
+
+test("Ångra puts a deleted box back under its id, lunches included", async () => {
+  const id = freshId();
+  await seed(OWNER, id);
+  await assertSucceeds(owner().doc(doc(OWNER, id)).delete());
+  await assertSucceeds(owner().doc(doc(OWNER, id)).set(restored()));
+});
+
+test("the owner changes the date", async () => {
+  const id = freshId();
+  await seed(OWNER, id);
+  await assertSucceeds(
+    owner()
+      .doc(doc(OWNER, id))
+      .update({ storedOn: new Date(), updatedAt: serverTimestamp() }),
+  );
+});
+
+test("moving a box with no lunches: new box and delete in one batch", async () => {
+  const id = freshId();
+  await env.withSecurityRulesDisabled(async (admin) => {
+    await admin.firestore().doc(doc(OWNER, id)).set({
+      recipeId: "recipe-1",
+      recipeTitle: "Chili",
+      location: "fridge",
+      storedOn: new Date(),
+      count: 3,
+      updatedAt: new Date(),
+    });
+  });
+  const db = owner();
+  const batch = db.batch();
+  batch.set(db.doc(doc(OWNER, freshId())), added({ location: "freezer", count: 3 }));
+  batch.delete(db.doc(doc(OWNER, id)));
+  await assertSucceeds(batch.commit());
+});
+
+test("moving a box with lunches keeps them on the old box", async () => {
+  const id = freshId();
+  await seed(OWNER, id);
+  const db = owner();
+  const batch = db.batch();
+  batch.set(db.doc(doc(OWNER, freshId())), added({ location: "freezer", count: 2 }));
+  batch.update(db.doc(doc(OWNER, id)), { count: 1, updatedAt: serverTimestamp() });
+  await assertSucceeds(batch.commit());
+});
+
+test("undoing a move deletes the new box and restores the old", async () => {
+  const id = freshId();
+  const moved = freshId();
+  await seed(OWNER, moved);
+  const db = owner();
+  const batch = db.batch();
+  batch.delete(db.doc(doc(OWNER, moved)));
+  batch.set(db.doc(doc(OWNER, id)), restored());
+  await assertSucceeds(batch.commit());
+});
+
+test("another user cannot restore, move or redate a box", async () => {
+  const id = freshId();
+  await seed(OWNER, id);
+  const other = env.authenticatedContext(OTHER).firestore();
+  await assertFails(other.doc(doc(OWNER, freshId())).set(restored()));
+  await assertFails(
+    other.doc(doc(OWNER, id)).update({ storedOn: new Date(), updatedAt: serverTimestamp() }),
   );
 });
 
