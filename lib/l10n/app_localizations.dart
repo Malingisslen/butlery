@@ -35448,6 +35448,12 @@ abstract class AppLocalizations {
   /// **'Kunde inte spara matlådorna'**
   String get mealBoxSaveFailed;
 
+  /// BUT-2486 part 5b: failure snackbar after Klart when both the box write and the pantry take were refused and nothing was written.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara matlådorna eller dra av från skafferiet'**
+  String get mealBoxAndPantryFailed;
+
   /// BUT-2486 part 5: failure snackbar when Ångra could not remove the box.
   ///
   /// In sv, this message translates to:

@@ -23200,6 +23200,10 @@ class AppLocalizationsSv extends AppLocalizations {
   String get mealBoxSaveFailed => 'Kunde inte spara matlådorna';
 
   @override
+  String get mealBoxAndPantryFailed =>
+      'Kunde inte spara matlådorna eller dra av från skafferiet';
+
+  @override
   String get mealBoxUndoFailed => 'Kunde inte ångra matlådorna';
 
   @override

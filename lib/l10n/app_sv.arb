@@ -19060,6 +19060,10 @@
   "@mealBoxSaveFailed": {
     "description": "BUT-2486 part 5: failure snackbar when the box write was refused."
   },
+  "mealBoxAndPantryFailed": "Kunde inte spara matlådorna eller dra av från skafferiet",
+  "@mealBoxAndPantryFailed": {
+    "description": "BUT-2486 part 5b: failure snackbar after Klart when both the box write and the pantry take were refused and nothing was written."
+  },
   "mealBoxUndoFailed": "Kunde inte ångra matlådorna",
   "@mealBoxUndoFailed": {
     "description": "BUT-2486 part 5: failure snackbar when Ångra could not remove the box."

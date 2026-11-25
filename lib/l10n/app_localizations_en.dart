@@ -23396,6 +23396,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get mealBoxSaveFailed => 'Could not save the meal boxes';
 
   @override
+  String get mealBoxAndPantryFailed =>
+      'Could not save the meal boxes or take anything out of the pantry';
+
+  @override
   String get mealBoxUndoFailed => 'Could not undo the meal boxes';
 
   @override
