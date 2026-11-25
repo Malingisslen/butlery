@@ -216,7 +216,11 @@ class CookedPantryFlow {
 
     final anythingWritten = savedBoxId != null || written.isNotEmpty;
     if (boxFailed || pantryFailed) {
-      final what = boxFailed ? l10n.mealBoxSaveFailed : l10n.cookedPantryFailed;
+      final what = boxFailed && pantryFailed && !anythingWritten
+          ? l10n.mealBoxAndPantryFailed
+          : boxFailed
+          ? l10n.mealBoxSaveFailed
+          : l10n.cookedPantryFailed;
       if (anythingWritten) {
         undo.show(what, onUndo: undoAll);
       } else {
