@@ -11631,3 +11631,20 @@ write, so offline they hang until the server acks. That is unlike the pantry's
 over 128 chars, or a take past the 60-key bound, is refused, and the whole week save with it.
 Principle added to the repo-guards-audit chapter: a recreate-on-merge writer recreates on its
 inverse branch too.
+
+## 2026-11-25 — BUT-2486 part 5b meal-box repository slice (gate review)
+
+Reviewed `firebase_meal_box_repository.dart`, `meal_box_repository.dart` and its test: every
+write wrapped in `awaitOrLeaveQueued`; new `restore` (plain set via `restoreWriteMap`),
+`setStoredOn`, `move` (batch: set new box with `remaining`, then delete old or update its count
+to `taken`) and `undoMove` (batch: delete moved, set original). Every write map checked against
+`mealBoxWriteValid()` (hasOnly recipeId/recipeTitle/location/storedOn/count/takes/updatedAt,
+updatedAt == request.time): all within. `MealBoxService.move` refuses `remaining < 1`, so the
+update leg's `taken` is always below the stored count. Batches are queued atomically offline
+(no transaction). Non-blocking notes: no accepted-deviation line names meal boxes on Firestore's
+queue (the BUT-2288 line names shopping lists and the pantry); no test pins the 2 s wrapper per
+method (the pantry suite does not either); a queued restore/undo from a device holding a valid ID
+token can recreate `users/{uid}/meal_boxes/{id}` after an erasure, the same shape as every
+queued own-subcollection write (pantry, takeWriteMap) — not new to this diff. Principle merged
+into reads-cache-offline (late NOT_FOUND on a move-shaped batch drops the returned new id).
+Verdict pass (0 blocking).

@@ -35267,6 +35267,324 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Önskemålet sparat'**
   String get menuWishSaved;
+
+  /// BUT-2486 part 5: pantry block heading; count is boxes left.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlådor · {count}'**
+  String mealBoxesHeading(int count);
+
+  /// BUT-2486 part 5: muted row while the boxes load.
+  ///
+  /// In sv, this message translates to:
+  /// **'Hämtar matlådorna …'**
+  String get mealBoxesLoading;
+
+  /// BUT-2486 part 5: muted row when the boxes could not be read.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte hämta matlådorna'**
+  String get mealBoxesLoadFailed;
+
+  /// BUT-2486 part 5: failure snackbar when a stepper write was refused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ändra antalet matlådor'**
+  String get mealBoxChangeFailed;
+
+  /// BUT-2486 part 5: snackbar when the stepper reaches zero; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} är slut'**
+  String mealBoxEmptiedUndo(String title);
+
+  /// BUT-2486 part 5: chip and place name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kylen'**
+  String get mealBoxLocationFridge;
+
+  /// BUT-2486 part 5: chip and place name.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frysen'**
+  String get mealBoxLocationFreezer;
+
+  /// BUT-2486 part 5: box subtitle; when is 'i dag' or a weekday or a date.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kylen · lagat {when}'**
+  String mealBoxSubtitleFridge(String when);
+
+  /// BUT-2486 part 5: box subtitle; date is the day it was frozen.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frysen · {date}'**
+  String mealBoxSubtitleFreezer(String date);
+
+  /// BUT-2486 part 5: value of 'when' in mealBoxSubtitleFridge.
+  ///
+  /// In sv, this message translates to:
+  /// **'i dag'**
+  String get mealBoxStoredToday;
+
+  /// BUT-2486 part 5: box subtitle tail when one lunch day takes boxes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} tas {day}'**
+  String mealBoxTakenOn(int count, String day);
+
+  /// BUT-2486 part 5: box subtitle tail when several lunch days take boxes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count} planerade'**
+  String mealBoxTakenMany(int count);
+
+  /// BUT-2486 part 5: lunch sheet box row.
+  ///
+  /// In sv, this message translates to:
+  /// **'I kylen · {count} kvar'**
+  String mealBoxLunchSubtitleFridge(int count);
+
+  /// BUT-2486 part 5: lunch sheet box row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Frysen · {count} kvar'**
+  String mealBoxLunchSubtitleFreezer(int count);
+
+  /// BUT-2486 part 5: stepper minus on a box card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Färre matlådor av {title}'**
+  String a11yMealBoxFewer(String title);
+
+  /// BUT-2486 part 5: stepper plus on a box card.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler matlådor av {title}'**
+  String a11yMealBoxMore(String title);
+
+  /// BUT-2486 part 5: stepper minus in the Klart sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Färre matlådor'**
+  String get a11yCookedLeftoversFewer;
+
+  /// BUT-2486 part 5: stepper plus in the Klart sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Fler matlådor'**
+  String get a11yCookedLeftoversMore;
+
+  /// BUT-2486 part 5: title of the combined sheet after Klart.
+  ///
+  /// In sv, this message translates to:
+  /// **'Klart! Du lagade {portions, plural, =1{1 portion} other{{portions} portioner}}'**
+  String cookedLeftoversTitle(int portions);
+
+  /// BUT-2486 part 5: section heading, drawn in capitals.
+  ///
+  /// In sv, this message translates to:
+  /// **'Blev det över?'**
+  String get cookedLeftoversOverHeading;
+
+  /// BUT-2486 part 5: label of the box stepper row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlådor'**
+  String get cookedLeftoversBoxes;
+
+  /// BUT-2486 part 5: subtitle of the box row; count is the household size.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Du åt en portion} other{Ni var {count} som åt}}'**
+  String cookedLeftoversEaters(int count);
+
+  /// BUT-2486 part 5: section heading, drawn in capitals.
+  ///
+  /// In sv, this message translates to:
+  /// **'Dra av från skafferiet'**
+  String get cookedLeftoversPantryHeading;
+
+  /// BUT-2486 part 5: pantry row title in the Klart sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =0{Inget dras av} =1{1 vara dras av} other{{count} varor dras av}}'**
+  String cookedLeftoversPantrySummary(int count);
+
+  /// BUT-2486 part 5: opens the pantry selection from the Klart sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra'**
+  String get cookedLeftoversChange;
+
+  /// BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Sparade 1 matlåda} other{Sparade {count} matlådor}} i kylen'**
+  String mealBoxSavedFridge(int count);
+
+  /// BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{Sparade 1 matlåda} other{Sparade {count} matlådor}} i frysen'**
+  String mealBoxSavedFreezer(int count);
+
+  /// BUT-2486 part 5: snackbar after Spara with both halves; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{boxes, plural, =1{Sparade 1 matlåda} other{Sparade {boxes} matlådor}} och drog av {items, plural, =1{1 vara} other{{items} varor}}'**
+  String mealBoxSavedWithPantry(int boxes, int items);
+
+  /// BUT-2486 part 5: failure snackbar when the box write was refused.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara matlådorna'**
+  String get mealBoxSaveFailed;
+
+  /// BUT-2486 part 5b: failure snackbar after Klart when both the box write and the pantry take were refused and nothing was written.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte spara matlådorna eller dra av från skafferiet'**
+  String get mealBoxAndPantryFailed;
+
+  /// BUT-2486 part 5: failure snackbar when Ångra could not remove the box.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra matlådorna'**
+  String get mealBoxUndoFailed;
+
+  /// BUT-2486 part 5: section heading in the lunch sheet, drawn in capitals.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ur kylen och frysen'**
+  String get lunchboxStockHeading;
+
+  /// BUT-2486 part 5: muted row in the lunch sheet when no box is left.
+  ///
+  /// In sv, this message translates to:
+  /// **'Spara rester som matlådor när du trycker Klart efter matlagningen'**
+  String get lunchboxStockEmpty;
+
+  /// BUT-2486 part 5: title of the per-box menu; count is boxes left.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} · {count, plural, =1{1 låda} other{{count} lådor}}'**
+  String mealBoxActionsTitle(String title, int count);
+
+  /// BUT-2486 part 5: per-box menu row; switches to the Meny tab.
+  ///
+  /// In sv, this message translates to:
+  /// **'Planera som lunch'**
+  String get mealBoxActionPlan;
+
+  /// BUT-2486 part 5: subtitle of the plan row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Välj dag i veckomenyn'**
+  String get mealBoxActionPlanHint;
+
+  /// BUT-2486 part 5: per-box menu row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta till frysen'**
+  String get mealBoxActionMoveToFreezer;
+
+  /// BUT-2486 part 5: per-box menu row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Flytta till kylen'**
+  String get mealBoxActionMoveToFridge;
+
+  /// BUT-2486 part 5: subtitle of the move row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Datumet blir i dag'**
+  String get mealBoxActionMoveHint;
+
+  /// BUT-2486 part 5: per-box menu row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra antal och datum'**
+  String get mealBoxActionEdit;
+
+  /// BUT-2486 part 5: per-box menu row, danger style.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ta bort'**
+  String get mealBoxActionRemove;
+
+  /// BUT-2486 part 5: stepper label in the edit sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Antal kvar'**
+  String get mealBoxEditCountLabel;
+
+  /// BUT-2486 part 5: date row label in the edit sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Datum'**
+  String get mealBoxEditDateLabel;
+
+  /// BUT-2486 part 5: hint on the disabled date row.
+  ///
+  /// In sv, this message translates to:
+  /// **'Datumet kan ändras när ingen lunch är planerad ur lådan'**
+  String get mealBoxEditDateLocked;
+
+  /// BUT-2486 part 5: date row in the edit sheet.
+  ///
+  /// In sv, this message translates to:
+  /// **'Ändra datum för {title}'**
+  String a11yMealBoxEditDate(String title);
+
+  /// BUT-2486 part 5: snackbar after a move; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} flyttad till kylen'**
+  String mealBoxMovedFridge(String title);
+
+  /// BUT-2486 part 5: snackbar after a move; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} flyttad till frysen'**
+  String mealBoxMovedFreezer(String title);
+
+  /// BUT-2486 part 5: failure snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte flytta matlådan'**
+  String get mealBoxMoveFailed;
+
+  /// BUT-2486 part 5: failure snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra flytten'**
+  String get mealBoxMoveUndoFailed;
+
+  /// BUT-2486 part 5: snackbar after Ta bort; pairs with commonUndo.
+  ///
+  /// In sv, this message translates to:
+  /// **'{title} borttagen'**
+  String mealBoxRemovedUndo(String title);
+
+  /// BUT-2486 part 5: failure snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ta bort matlådan'**
+  String get mealBoxRemoveFailed;
+
+  /// BUT-2486 part 5: failure snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ångra borttagningen'**
+  String get mealBoxRestoreFailed;
+
+  /// BUT-2486 part 5: failure snackbar.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kunde inte ändra datumet'**
+  String get mealBoxDateFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -72,7 +72,12 @@ class MealBoxService extends BaseService {
     }
   }
 
+  /// Stores [box] and returns its id. A blank title is refused before
+  /// anything is written, so the view can ask for a name.
   Future<String> add(MealBox box) async {
+    if (box.recipeTitle.trim().isEmpty) {
+      throw ArgumentError.value(box.recipeTitle, 'recipeTitle', 'blank');
+    }
     final id = await executeServiceOperation<String>(
       () => _repository.add(box),
       operationName: 'add',
@@ -81,13 +86,71 @@ class MealBoxService extends BaseService {
     return id;
   }
 
-  Future<void> setCount(String id, int count) => executeServiceOperation<void>(
+  Future<void> setCount(String id, int count) => _write(
     () => _repository.setCount(id, count),
     operationName: 'setCount',
   );
 
-  Future<void> remove(String id) => executeServiceOperation<void>(
-    () => _repository.delete(id),
-    operationName: 'remove',
+  /// Sets what is left of [box] to [remaining]. The stored count also holds
+  /// the boxes planned lunches take, so those are added back.
+  Future<void> setRemaining(MealBox box, int remaining) =>
+      setCount(box.id, (remaining + box.taken).clamp(0, MealBox.maxCount));
+
+  Future<void> remove(String id) =>
+      _write(() => _repository.delete(id), operationName: 'remove');
+
+  /// Puts back a box [remove] deleted, its planned lunches included.
+  Future<void> restore(MealBox box) =>
+      _write(() => _repository.restore(box), operationName: 'restore');
+
+  /// The day the food was cooked or frozen. Not after today.
+  Future<void> setStoredOn(String id, DateTime storedOn) async {
+    if (storedOn.isAfter(clock.now())) {
+      throw ArgumentError.value(storedOn, 'storedOn', 'in the future');
+    }
+    await _write(
+      () => _repository.setStoredOn(id, storedOn),
+      operationName: 'setStoredOn',
+    );
+  }
+
+  /// Moves what is left of [box] to the other place, dated today, and returns
+  /// the new box's id. Lunches already planned keep taking from [box], whose
+  /// place and date they carry.
+  Future<String> move(MealBox box, MealBoxLocation to) async {
+    if (box.remaining < 1 || box.location == to) {
+      throw ArgumentError.value(box.id, 'box', 'nothing to move');
+    }
+    final id = await executeServiceOperation<String>(
+      () => _repository.move(box, to, clock.now()),
+      operationName: 'move',
+    );
+    if (id == null) throw StateError('MealBoxService.move failed');
+    return id;
+  }
+
+  Future<void> undoMove(MealBox original, String movedId) => _write(
+    () => _repository.undoMove(original, movedId),
+    operationName: 'undoMove',
   );
+
+  /// A void operation whose failure reaches the caller; the base service
+  /// would otherwise answer a refused write and a done one alike.
+  Future<void> _write(
+    Future<void> Function() operation, {
+    required String operationName,
+  }) async {
+    final done = await executeServiceOperation<bool>(() async {
+      await operation();
+      return true;
+    }, operationName: operationName);
+    if (done != true) throw StateError('MealBoxService.$operationName failed');
+  }
+
+  /// Boxes the list shows: one with nothing left and no lunch planned from it
+  /// is hidden (a lunch given back can recreate an emptied box).
+  static List<MealBox> shown(List<MealBox> boxes) => [
+    for (final box in boxes)
+      if (box.count > 0 || box.takes.isNotEmpty) box,
+  ];
 }

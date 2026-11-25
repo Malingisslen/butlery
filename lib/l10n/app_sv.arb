@@ -18853,5 +18853,331 @@
   "menuWishSaved": "Önskemålet sparat",
   "@menuWishSaved": {
     "description": "BUT-2529: snackbar after the wish was saved"
+  },
+  "mealBoxesHeading": "Matlådor · {count}",
+  "@mealBoxesHeading": {
+    "description": "BUT-2486 part 5: pantry block heading; count is boxes left.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxesLoading": "Hämtar matlådorna …",
+  "@mealBoxesLoading": {
+    "description": "BUT-2486 part 5: muted row while the boxes load."
+  },
+  "mealBoxesLoadFailed": "Kunde inte hämta matlådorna",
+  "@mealBoxesLoadFailed": {
+    "description": "BUT-2486 part 5: muted row when the boxes could not be read."
+  },
+  "mealBoxChangeFailed": "Kunde inte ändra antalet matlådor",
+  "@mealBoxChangeFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when a stepper write was refused."
+  },
+  "mealBoxEmptiedUndo": "{title} är slut",
+  "@mealBoxEmptiedUndo": {
+    "description": "BUT-2486 part 5: snackbar when the stepper reaches zero; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxLocationFridge": "Kylen",
+  "@mealBoxLocationFridge": {
+    "description": "BUT-2486 part 5: chip and place name."
+  },
+  "mealBoxLocationFreezer": "Frysen",
+  "@mealBoxLocationFreezer": {
+    "description": "BUT-2486 part 5: chip and place name."
+  },
+  "mealBoxSubtitleFridge": "Kylen · lagat {when}",
+  "@mealBoxSubtitleFridge": {
+    "description": "BUT-2486 part 5: box subtitle; when is 'i dag' or a weekday or a date.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxSubtitleFreezer": "Frysen · {date}",
+  "@mealBoxSubtitleFreezer": {
+    "description": "BUT-2486 part 5: box subtitle; date is the day it was frozen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxStoredToday": "i dag",
+  "@mealBoxStoredToday": {
+    "description": "BUT-2486 part 5: value of 'when' in mealBoxSubtitleFridge."
+  },
+  "mealBoxTakenOn": "{count} tas {day}",
+  "@mealBoxTakenOn": {
+    "description": "BUT-2486 part 5: box subtitle tail when one lunch day takes boxes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxTakenMany": "{count} planerade",
+  "@mealBoxTakenMany": {
+    "description": "BUT-2486 part 5: box subtitle tail when several lunch days take boxes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxLunchSubtitleFridge": "I kylen · {count} kvar",
+  "@mealBoxLunchSubtitleFridge": {
+    "description": "BUT-2486 part 5: lunch sheet box row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxLunchSubtitleFreezer": "Frysen · {count} kvar",
+  "@mealBoxLunchSubtitleFreezer": {
+    "description": "BUT-2486 part 5: lunch sheet box row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yMealBoxFewer": "Färre matlådor av {title}",
+  "@a11yMealBoxFewer": {
+    "description": "BUT-2486 part 5: stepper minus on a box card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMealBoxMore": "Fler matlådor av {title}",
+  "@a11yMealBoxMore": {
+    "description": "BUT-2486 part 5: stepper plus on a box card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCookedLeftoversFewer": "Färre matlådor",
+  "@a11yCookedLeftoversFewer": {
+    "description": "BUT-2486 part 5: stepper minus in the Klart sheet."
+  },
+  "a11yCookedLeftoversMore": "Fler matlådor",
+  "@a11yCookedLeftoversMore": {
+    "description": "BUT-2486 part 5: stepper plus in the Klart sheet."
+  },
+  "cookedLeftoversTitle": "Klart! Du lagade {portions, plural, =1{1 portion} other{{portions} portioner}}",
+  "@cookedLeftoversTitle": {
+    "description": "BUT-2486 part 5: title of the combined sheet after Klart.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversOverHeading": "Blev det över?",
+  "@cookedLeftoversOverHeading": {
+    "description": "BUT-2486 part 5: section heading, drawn in capitals."
+  },
+  "cookedLeftoversBoxes": "Matlådor",
+  "@cookedLeftoversBoxes": {
+    "description": "BUT-2486 part 5: label of the box stepper row."
+  },
+  "cookedLeftoversEaters": "{count, plural, =1{Du åt en portion} other{Ni var {count} som åt}}",
+  "@cookedLeftoversEaters": {
+    "description": "BUT-2486 part 5: subtitle of the box row; count is the household size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversPantryHeading": "Dra av från skafferiet",
+  "@cookedLeftoversPantryHeading": {
+    "description": "BUT-2486 part 5: section heading, drawn in capitals."
+  },
+  "cookedLeftoversPantrySummary": "{count, plural, =0{Inget dras av} =1{1 vara dras av} other{{count} varor dras av}}",
+  "@cookedLeftoversPantrySummary": {
+    "description": "BUT-2486 part 5: pantry row title in the Klart sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversChange": "Ändra",
+  "@cookedLeftoversChange": {
+    "description": "BUT-2486 part 5: opens the pantry selection from the Klart sheet."
+  },
+  "mealBoxSavedFridge": "{count, plural, =1{Sparade 1 matlåda} other{Sparade {count} matlådor}} i kylen",
+  "@mealBoxSavedFridge": {
+    "description": "BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSavedFreezer": "{count, plural, =1{Sparade 1 matlåda} other{Sparade {count} matlådor}} i frysen",
+  "@mealBoxSavedFreezer": {
+    "description": "BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSavedWithPantry": "{boxes, plural, =1{Sparade 1 matlåda} other{Sparade {boxes} matlådor}} och drog av {items, plural, =1{1 vara} other{{items} varor}}",
+  "@mealBoxSavedWithPantry": {
+    "description": "BUT-2486 part 5: snackbar after Spara with both halves; pairs with commonUndo.",
+    "placeholders": {
+      "boxes": {
+        "type": "int"
+      },
+      "items": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSaveFailed": "Kunde inte spara matlådorna",
+  "@mealBoxSaveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when the box write was refused."
+  },
+  "mealBoxAndPantryFailed": "Kunde inte spara matlådorna eller dra av från skafferiet",
+  "@mealBoxAndPantryFailed": {
+    "description": "BUT-2486 part 5b: failure snackbar after Klart when both the box write and the pantry take were refused and nothing was written."
+  },
+  "mealBoxUndoFailed": "Kunde inte ångra matlådorna",
+  "@mealBoxUndoFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when Ångra could not remove the box."
+  },
+  "lunchboxStockHeading": "Ur kylen och frysen",
+  "@lunchboxStockHeading": {
+    "description": "BUT-2486 part 5: section heading in the lunch sheet, drawn in capitals."
+  },
+  "lunchboxStockEmpty": "Spara rester som matlådor när du trycker Klart efter matlagningen",
+  "@lunchboxStockEmpty": {
+    "description": "BUT-2486 part 5: muted row in the lunch sheet when no box is left."
+  },
+  "mealBoxActionsTitle": "{title} · {count, plural, =1{1 låda} other{{count} lådor}}",
+  "@mealBoxActionsTitle": {
+    "description": "BUT-2486 part 5: title of the per-box menu; count is boxes left.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxActionPlan": "Planera som lunch",
+  "@mealBoxActionPlan": {
+    "description": "BUT-2486 part 5: per-box menu row; switches to the Meny tab."
+  },
+  "mealBoxActionPlanHint": "Välj dag i veckomenyn",
+  "@mealBoxActionPlanHint": {
+    "description": "BUT-2486 part 5: subtitle of the plan row."
+  },
+  "mealBoxActionMoveToFreezer": "Flytta till frysen",
+  "@mealBoxActionMoveToFreezer": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionMoveToFridge": "Flytta till kylen",
+  "@mealBoxActionMoveToFridge": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionMoveHint": "Datumet blir i dag",
+  "@mealBoxActionMoveHint": {
+    "description": "BUT-2486 part 5: subtitle of the move row."
+  },
+  "mealBoxActionEdit": "Ändra antal och datum",
+  "@mealBoxActionEdit": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionRemove": "Ta bort",
+  "@mealBoxActionRemove": {
+    "description": "BUT-2486 part 5: per-box menu row, danger style."
+  },
+  "mealBoxEditCountLabel": "Antal kvar",
+  "@mealBoxEditCountLabel": {
+    "description": "BUT-2486 part 5: stepper label in the edit sheet."
+  },
+  "mealBoxEditDateLabel": "Datum",
+  "@mealBoxEditDateLabel": {
+    "description": "BUT-2486 part 5: date row label in the edit sheet."
+  },
+  "mealBoxEditDateLocked": "Datumet kan ändras när ingen lunch är planerad ur lådan",
+  "@mealBoxEditDateLocked": {
+    "description": "BUT-2486 part 5: hint on the disabled date row."
+  },
+  "a11yMealBoxEditDate": "Ändra datum för {title}",
+  "@a11yMealBoxEditDate": {
+    "description": "BUT-2486 part 5: date row in the edit sheet.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMovedFridge": "{title} flyttad till kylen",
+  "@mealBoxMovedFridge": {
+    "description": "BUT-2486 part 5: snackbar after a move; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMovedFreezer": "{title} flyttad till frysen",
+  "@mealBoxMovedFreezer": {
+    "description": "BUT-2486 part 5: snackbar after a move; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMoveFailed": "Kunde inte flytta matlådan",
+  "@mealBoxMoveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxMoveUndoFailed": "Kunde inte ångra flytten",
+  "@mealBoxMoveUndoFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxRemovedUndo": "{title} borttagen",
+  "@mealBoxRemovedUndo": {
+    "description": "BUT-2486 part 5: snackbar after Ta bort; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxRemoveFailed": "Kunde inte ta bort matlådan",
+  "@mealBoxRemoveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxRestoreFailed": "Kunde inte ångra borttagningen",
+  "@mealBoxRestoreFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxDateFailed": "Kunde inte ändra datumet",
+  "@mealBoxDateFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
   }
 }

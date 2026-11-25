@@ -88,6 +88,16 @@ abstract final class AnalyticsEvents {
   static const recipeFavorited = 'recipe_favorited';
   static const postImportEdit = 'post_import_edit';
 
+  // --- Fridge and freezer boxes (BUT-2486 part 5) ---
+  /// The sheet after "Klart" offered to keep leftovers as boxes.
+  static const mealBoxOfferShown = 'meal_box_offer_shown';
+
+  /// Boxes were saved from that offer.
+  static const mealBoxOfferSaved = 'meal_box_offer_saved';
+
+  /// A box's count was corrected by hand with plus or minus.
+  static const mealBoxCountCorrected = 'meal_box_count_corrected';
+
   // --- Pooled ratings "Butlery-betyget" (decision 15) ---
   // `poolRatingShown` fires once per recipe-detail open when the community
   // score clears the display floor and is rendered (the detail-open stats

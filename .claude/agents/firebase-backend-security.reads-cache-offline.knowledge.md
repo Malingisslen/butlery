@@ -126,7 +126,9 @@
   per write: (1) which rule conjuncts can deny on replay that did not deny when written
   (`isHouseholdMember`, a consent gate, a block gate, a doc a CF deleted meanwhile); (2) a
   BATCH refusal also reverts the caller's OWN fields in it, an allergen declaration
-  included; (3) a stale in-memory value re-sent by the next whole-profile save gets that
+  included, and a create leg with it: a move-shaped batch (create new doc + `update` the
+  old) whose old doc another device deleted is refused NOT_FOUND on replay, so the id the
+  method already returned names a doc that never lands; (3) a stale in-memory value re-sent by the next whole-profile save gets that
   save denied. Before calling a granted `logPermissionCheck` after such a write an orphan
   trail row, check that it passes `auditRepository:`. Without it the row only reaches the
   device log.

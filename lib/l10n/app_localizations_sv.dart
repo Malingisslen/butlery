@@ -23032,4 +23032,257 @@ class AppLocalizationsSv extends AppLocalizations {
 
   @override
   String get menuWishSaved => 'Önskemålet sparat';
+
+  @override
+  String mealBoxesHeading(int count) {
+    return 'Matlådor · $count';
+  }
+
+  @override
+  String get mealBoxesLoading => 'Hämtar matlådorna …';
+
+  @override
+  String get mealBoxesLoadFailed => 'Kunde inte hämta matlådorna';
+
+  @override
+  String get mealBoxChangeFailed => 'Kunde inte ändra antalet matlådor';
+
+  @override
+  String mealBoxEmptiedUndo(String title) {
+    return '$title är slut';
+  }
+
+  @override
+  String get mealBoxLocationFridge => 'Kylen';
+
+  @override
+  String get mealBoxLocationFreezer => 'Frysen';
+
+  @override
+  String mealBoxSubtitleFridge(String when) {
+    return 'Kylen · lagat $when';
+  }
+
+  @override
+  String mealBoxSubtitleFreezer(String date) {
+    return 'Frysen · $date';
+  }
+
+  @override
+  String get mealBoxStoredToday => 'i dag';
+
+  @override
+  String mealBoxTakenOn(int count, String day) {
+    return '$count tas $day';
+  }
+
+  @override
+  String mealBoxTakenMany(int count) {
+    return '$count planerade';
+  }
+
+  @override
+  String mealBoxLunchSubtitleFridge(int count) {
+    return 'I kylen · $count kvar';
+  }
+
+  @override
+  String mealBoxLunchSubtitleFreezer(int count) {
+    return 'Frysen · $count kvar';
+  }
+
+  @override
+  String a11yMealBoxFewer(String title) {
+    return 'Färre matlådor av $title';
+  }
+
+  @override
+  String a11yMealBoxMore(String title) {
+    return 'Fler matlådor av $title';
+  }
+
+  @override
+  String get a11yCookedLeftoversFewer => 'Färre matlådor';
+
+  @override
+  String get a11yCookedLeftoversMore => 'Fler matlådor';
+
+  @override
+  String cookedLeftoversTitle(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions portioner',
+      one: '1 portion',
+    );
+    return 'Klart! Du lagade $_temp0';
+  }
+
+  @override
+  String get cookedLeftoversOverHeading => 'Blev det över?';
+
+  @override
+  String get cookedLeftoversBoxes => 'Matlådor';
+
+  @override
+  String cookedLeftoversEaters(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Ni var $count som åt',
+      one: 'Du åt en portion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookedLeftoversPantryHeading => 'Dra av från skafferiet';
+
+  @override
+  String cookedLeftoversPantrySummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count varor dras av',
+      one: '1 vara dras av',
+      zero: 'Inget dras av',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookedLeftoversChange => 'Ändra';
+
+  @override
+  String mealBoxSavedFridge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sparade $count matlådor',
+      one: 'Sparade 1 matlåda',
+    );
+    return '$_temp0 i kylen';
+  }
+
+  @override
+  String mealBoxSavedFreezer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Sparade $count matlådor',
+      one: 'Sparade 1 matlåda',
+    );
+    return '$_temp0 i frysen';
+  }
+
+  @override
+  String mealBoxSavedWithPantry(int boxes, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: 'Sparade $boxes matlådor',
+      one: 'Sparade 1 matlåda',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items varor',
+      one: '1 vara',
+    );
+    return '$_temp0 och drog av $_temp1';
+  }
+
+  @override
+  String get mealBoxSaveFailed => 'Kunde inte spara matlådorna';
+
+  @override
+  String get mealBoxAndPantryFailed =>
+      'Kunde inte spara matlådorna eller dra av från skafferiet';
+
+  @override
+  String get mealBoxUndoFailed => 'Kunde inte ångra matlådorna';
+
+  @override
+  String get lunchboxStockHeading => 'Ur kylen och frysen';
+
+  @override
+  String get lunchboxStockEmpty =>
+      'Spara rester som matlådor när du trycker Klart efter matlagningen';
+
+  @override
+  String mealBoxActionsTitle(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count lådor',
+      one: '1 låda',
+    );
+    return '$title · $_temp0';
+  }
+
+  @override
+  String get mealBoxActionPlan => 'Planera som lunch';
+
+  @override
+  String get mealBoxActionPlanHint => 'Välj dag i veckomenyn';
+
+  @override
+  String get mealBoxActionMoveToFreezer => 'Flytta till frysen';
+
+  @override
+  String get mealBoxActionMoveToFridge => 'Flytta till kylen';
+
+  @override
+  String get mealBoxActionMoveHint => 'Datumet blir i dag';
+
+  @override
+  String get mealBoxActionEdit => 'Ändra antal och datum';
+
+  @override
+  String get mealBoxActionRemove => 'Ta bort';
+
+  @override
+  String get mealBoxEditCountLabel => 'Antal kvar';
+
+  @override
+  String get mealBoxEditDateLabel => 'Datum';
+
+  @override
+  String get mealBoxEditDateLocked =>
+      'Datumet kan ändras när ingen lunch är planerad ur lådan';
+
+  @override
+  String a11yMealBoxEditDate(String title) {
+    return 'Ändra datum för $title';
+  }
+
+  @override
+  String mealBoxMovedFridge(String title) {
+    return '$title flyttad till kylen';
+  }
+
+  @override
+  String mealBoxMovedFreezer(String title) {
+    return '$title flyttad till frysen';
+  }
+
+  @override
+  String get mealBoxMoveFailed => 'Kunde inte flytta matlådan';
+
+  @override
+  String get mealBoxMoveUndoFailed => 'Kunde inte ångra flytten';
+
+  @override
+  String mealBoxRemovedUndo(String title) {
+    return '$title borttagen';
+  }
+
+  @override
+  String get mealBoxRemoveFailed => 'Kunde inte ta bort matlådan';
+
+  @override
+  String get mealBoxRestoreFailed => 'Kunde inte ångra borttagningen';
+
+  @override
+  String get mealBoxDateFailed => 'Kunde inte ändra datumet';
 }

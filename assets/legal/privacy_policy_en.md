@@ -1,7 +1,7 @@
 # Privacy Policy for Butlery
 
-**Last updated:** November 24, 2026
-**Version:** 1.43
+**Last updated:** November 25, 2026
+**Version:** 1.44
 
 ---
 
@@ -40,6 +40,7 @@ We collect the following types of personal data when you use Butlery:
 - **Fixed days:** If you save a fixed day in the weekly menu, for example fish on Mondays, we store the weekday, the meal, the kind of food or evening you chose and whether it is paused. It is only used to choose recipes for your weekly menu. Only you can see your fixed days. They are included in your data export and are deleted when you remove them or delete your account.
 - **A group's fixed days:** A group's admin can save fixed days for the group's weekly menu, for example tacos on Fridays. We store the weekday, the meal, the kind of food or evening chosen and whether the rule is paused, but not who saved it. Everyone in the group can see the group's fixed days. The app does not add any dishes by itself. When someone picks a dish from their own recipes, the week's history may show who picked it. The fixed days are included in the data export and are deleted when the admin removes them or when the group is deleted.
 - **Saved weekly-menu wishes:** If you save a wish for the weekly menu, for example “Child-friendly dinners, nothing spicy”, we store the name and the text you wrote. We also store your latest wish so that you can choose “Same as last week”. The text is free, so it can contain things you write yourself about diet or health, for example that someone eats gluten-free. The wishes are only used to fill in the weekly menu, only you see them, they are included in the data export and they are deleted when you remove them or delete the account. The latest wish is overwritten the next time you ask for a menu with a different wish.
+- **Meal boxes in the fridge and freezer:** If you save meal boxes, we store the dish's name and which recipe it comes from, whether the boxes are in the fridge or the freezer, when the food was cooked or frozen and how many boxes you have. When you choose a box as a lunch in the weekly menu, we store which day the box is taken, so that the count stays right. The meal boxes are only used to keep track of what you have at home and for the weekly menu's lunches. Only you see them, they are included in the data export and they are deleted when you remove them or delete the account. An empty box is deleted automatically after 30 days.
 - **Communications:** Messages you send to us or other users
 - **Feedback:** When you send feedback in the app, we store what you write, the kind of feedback, your email address if you give it, and a screenshot if you attach one. We also store the last 20 screens and actions you used in the app before the feedback, with their times, and your platform, app version and time zone. Feedback is kept for about 12 months and is deleted earlier if you delete your account.
 
@@ -305,6 +306,7 @@ If you sign in with Google or Apple, sign-in goes through Firebase Authenticatio
 | Fixed days in the weekly menu | Until you remove them or delete the account | Performance of contract |
 | A group's fixed days | Until the group's admin removes them or the group is deleted | Performance of contract |
 | Saved weekly-menu wishes | Until you remove them or delete the account | Performance of contract |
+| Meal boxes in the fridge and freezer | Until you remove them or delete the account; an empty box after 30 days | Performance of contract |
 | Recipes you show on your profile (what others see, with separate photo copies) | Until you stop showing the recipe, delete it or delete your account | Performance of contract |
 | Short links when you share or invite with a link (your user id, the link address and when it was created) | 14 days after the link was created, or until you delete the account | Performance of contract |
 | Recipes you have deleted, with photos (the trash) | 30 days after the deletion, or until you delete them for good, empty the trash or delete the account | Performance of contract |

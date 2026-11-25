@@ -18839,5 +18839,331 @@
   "menuWishSaved": "Wish saved",
   "@menuWishSaved": {
     "description": "BUT-2529: snackbar after the wish was saved"
+  },
+  "mealBoxesHeading": "Meal boxes · {count}",
+  "@mealBoxesHeading": {
+    "description": "BUT-2486 part 5: pantry block heading; count is boxes left.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxesLoading": "Fetching your meal boxes …",
+  "@mealBoxesLoading": {
+    "description": "BUT-2486 part 5: muted row while the boxes load."
+  },
+  "mealBoxesLoadFailed": "Could not fetch your meal boxes",
+  "@mealBoxesLoadFailed": {
+    "description": "BUT-2486 part 5: muted row when the boxes could not be read."
+  },
+  "mealBoxChangeFailed": "Could not change the number of meal boxes",
+  "@mealBoxChangeFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when a stepper write was refused."
+  },
+  "mealBoxEmptiedUndo": "{title} is all gone",
+  "@mealBoxEmptiedUndo": {
+    "description": "BUT-2486 part 5: snackbar when the stepper reaches zero; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxLocationFridge": "Fridge",
+  "@mealBoxLocationFridge": {
+    "description": "BUT-2486 part 5: chip and place name."
+  },
+  "mealBoxLocationFreezer": "Freezer",
+  "@mealBoxLocationFreezer": {
+    "description": "BUT-2486 part 5: chip and place name."
+  },
+  "mealBoxSubtitleFridge": "Fridge · made {when}",
+  "@mealBoxSubtitleFridge": {
+    "description": "BUT-2486 part 5: box subtitle; when is 'i dag' or a weekday or a date.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxSubtitleFreezer": "Freezer · {date}",
+  "@mealBoxSubtitleFreezer": {
+    "description": "BUT-2486 part 5: box subtitle; date is the day it was frozen.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxStoredToday": "today",
+  "@mealBoxStoredToday": {
+    "description": "BUT-2486 part 5: value of 'when' in mealBoxSubtitleFridge."
+  },
+  "mealBoxTakenOn": "{count} taken {day}",
+  "@mealBoxTakenOn": {
+    "description": "BUT-2486 part 5: box subtitle tail when one lunch day takes boxes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxTakenMany": "{count} planned",
+  "@mealBoxTakenMany": {
+    "description": "BUT-2486 part 5: box subtitle tail when several lunch days take boxes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxLunchSubtitleFridge": "In the fridge · {count} left",
+  "@mealBoxLunchSubtitleFridge": {
+    "description": "BUT-2486 part 5: lunch sheet box row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxLunchSubtitleFreezer": "Freezer · {count} left",
+  "@mealBoxLunchSubtitleFreezer": {
+    "description": "BUT-2486 part 5: lunch sheet box row.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "a11yMealBoxFewer": "Fewer boxes of {title}",
+  "@a11yMealBoxFewer": {
+    "description": "BUT-2486 part 5: stepper minus on a box card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yMealBoxMore": "More boxes of {title}",
+  "@a11yMealBoxMore": {
+    "description": "BUT-2486 part 5: stepper plus on a box card.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "a11yCookedLeftoversFewer": "Fewer meal boxes",
+  "@a11yCookedLeftoversFewer": {
+    "description": "BUT-2486 part 5: stepper minus in the Klart sheet."
+  },
+  "a11yCookedLeftoversMore": "More meal boxes",
+  "@a11yCookedLeftoversMore": {
+    "description": "BUT-2486 part 5: stepper plus in the Klart sheet."
+  },
+  "cookedLeftoversTitle": "Done! You made {portions, plural, =1{1 portion} other{{portions} portions}}",
+  "@cookedLeftoversTitle": {
+    "description": "BUT-2486 part 5: title of the combined sheet after Klart.",
+    "placeholders": {
+      "portions": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversOverHeading": "Any left over?",
+  "@cookedLeftoversOverHeading": {
+    "description": "BUT-2486 part 5: section heading, drawn in capitals."
+  },
+  "cookedLeftoversBoxes": "Meal boxes",
+  "@cookedLeftoversBoxes": {
+    "description": "BUT-2486 part 5: label of the box stepper row."
+  },
+  "cookedLeftoversEaters": "{count, plural, =1{You ate one portion} other{{count} of you ate}}",
+  "@cookedLeftoversEaters": {
+    "description": "BUT-2486 part 5: subtitle of the box row; count is the household size.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversPantryHeading": "Take from the pantry",
+  "@cookedLeftoversPantryHeading": {
+    "description": "BUT-2486 part 5: section heading, drawn in capitals."
+  },
+  "cookedLeftoversPantrySummary": "{count, plural, =0{Nothing is taken} =1{1 item is taken} other{{count} items are taken}}",
+  "@cookedLeftoversPantrySummary": {
+    "description": "BUT-2486 part 5: pantry row title in the Klart sheet.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "cookedLeftoversChange": "Change",
+  "@cookedLeftoversChange": {
+    "description": "BUT-2486 part 5: opens the pantry selection from the Klart sheet."
+  },
+  "mealBoxSavedFridge": "{count, plural, =1{Saved 1 meal box} other{Saved {count} meal boxes}} in the fridge",
+  "@mealBoxSavedFridge": {
+    "description": "BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSavedFreezer": "{count, plural, =1{Saved 1 meal box} other{Saved {count} meal boxes}} in the freezer",
+  "@mealBoxSavedFreezer": {
+    "description": "BUT-2486 part 5: snackbar after Spara; pairs with commonUndo.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSavedWithPantry": "{boxes, plural, =1{Saved 1 meal box} other{Saved {boxes} meal boxes}} and took {items, plural, =1{1 item} other{{items} items}} from the pantry",
+  "@mealBoxSavedWithPantry": {
+    "description": "BUT-2486 part 5: snackbar after Spara with both halves; pairs with commonUndo.",
+    "placeholders": {
+      "boxes": {
+        "type": "int"
+      },
+      "items": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxSaveFailed": "Could not save the meal boxes",
+  "@mealBoxSaveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when the box write was refused."
+  },
+  "mealBoxAndPantryFailed": "Could not save the meal boxes or take anything out of the pantry",
+  "@mealBoxAndPantryFailed": {
+    "description": "BUT-2486 part 5b: failure snackbar after Klart when both the box write and the pantry take were refused and nothing was written."
+  },
+  "mealBoxUndoFailed": "Could not undo the meal boxes",
+  "@mealBoxUndoFailed": {
+    "description": "BUT-2486 part 5: failure snackbar when Ångra could not remove the box."
+  },
+  "lunchboxStockHeading": "From the fridge and freezer",
+  "@lunchboxStockHeading": {
+    "description": "BUT-2486 part 5: section heading in the lunch sheet, drawn in capitals."
+  },
+  "lunchboxStockEmpty": "Save leftovers as meal boxes when you tap Done after cooking",
+  "@lunchboxStockEmpty": {
+    "description": "BUT-2486 part 5: muted row in the lunch sheet when no box is left."
+  },
+  "mealBoxActionsTitle": "{title} · {count, plural, =1{1 box} other{{count} boxes}}",
+  "@mealBoxActionsTitle": {
+    "description": "BUT-2486 part 5: title of the per-box menu; count is boxes left.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "mealBoxActionPlan": "Plan as lunch",
+  "@mealBoxActionPlan": {
+    "description": "BUT-2486 part 5: per-box menu row; switches to the Meny tab."
+  },
+  "mealBoxActionPlanHint": "Pick a day in the weekly menu",
+  "@mealBoxActionPlanHint": {
+    "description": "BUT-2486 part 5: subtitle of the plan row."
+  },
+  "mealBoxActionMoveToFreezer": "Move to the freezer",
+  "@mealBoxActionMoveToFreezer": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionMoveToFridge": "Move to the fridge",
+  "@mealBoxActionMoveToFridge": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionMoveHint": "The date becomes today",
+  "@mealBoxActionMoveHint": {
+    "description": "BUT-2486 part 5: subtitle of the move row."
+  },
+  "mealBoxActionEdit": "Change number and date",
+  "@mealBoxActionEdit": {
+    "description": "BUT-2486 part 5: per-box menu row."
+  },
+  "mealBoxActionRemove": "Remove",
+  "@mealBoxActionRemove": {
+    "description": "BUT-2486 part 5: per-box menu row, danger style."
+  },
+  "mealBoxEditCountLabel": "Boxes left",
+  "@mealBoxEditCountLabel": {
+    "description": "BUT-2486 part 5: stepper label in the edit sheet."
+  },
+  "mealBoxEditDateLabel": "Date",
+  "@mealBoxEditDateLabel": {
+    "description": "BUT-2486 part 5: date row label in the edit sheet."
+  },
+  "mealBoxEditDateLocked": "The date can be changed when no lunch is planned from the box",
+  "@mealBoxEditDateLocked": {
+    "description": "BUT-2486 part 5: hint on the disabled date row."
+  },
+  "a11yMealBoxEditDate": "Change the date of {title}",
+  "@a11yMealBoxEditDate": {
+    "description": "BUT-2486 part 5: date row in the edit sheet.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMovedFridge": "{title} moved to the fridge",
+  "@mealBoxMovedFridge": {
+    "description": "BUT-2486 part 5: snackbar after a move; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMovedFreezer": "{title} moved to the freezer",
+  "@mealBoxMovedFreezer": {
+    "description": "BUT-2486 part 5: snackbar after a move; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxMoveFailed": "Could not move the meal box",
+  "@mealBoxMoveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxMoveUndoFailed": "Could not undo the move",
+  "@mealBoxMoveUndoFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxRemovedUndo": "{title} removed",
+  "@mealBoxRemovedUndo": {
+    "description": "BUT-2486 part 5: snackbar after Ta bort; pairs with commonUndo.",
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "mealBoxRemoveFailed": "Could not remove the meal box",
+  "@mealBoxRemoveFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxRestoreFailed": "Could not undo the removal",
+  "@mealBoxRestoreFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "mealBoxDateFailed": "Could not change the date",
+  "@mealBoxDateFailed": {
+    "description": "BUT-2486 part 5: failure snackbar."
   }
 }

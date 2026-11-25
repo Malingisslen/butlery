@@ -207,7 +207,7 @@
       "id": "v-lunchbox-sheet",
       "label": "Matlådearket (lunch som matlåda)",
       "context": "view",
-      "path": "lib/widgets/menu/calendar/lunchbox_sheet.dart, lib/widgets/menu/calendar/lunchbox_flow.dart"
+      "path": "lib/widgets/menu/calendar/lunchbox_sheet.dart, lib/widgets/menu/calendar/lunchbox_flow.dart, lib/widgets/menu/calendar/lunchbox_stock_section.dart"
     },
     {
       "id": "v-voice-import",
@@ -2608,6 +2608,42 @@
       "label": "enforceGroupMinorMembership (backstop)",
       "context": "cloud-function",
       "path": "functions/src/messaging/enforce-group-minor-membership.ts"
+    },
+    {
+      "id": "v-meal-boxes-block",
+      "label": "Matlådeblocket i Skafferiet (kort, plus/minus, lådmeny)",
+      "context": "view",
+      "path": "lib/widgets/pantry/meal_boxes/meal_boxes_block.dart, lib/widgets/pantry/meal_boxes/meal_box_actions_sheet.dart, lib/widgets/pantry/meal_boxes/meal_box_edit_sheet.dart"
+    },
+    {
+      "id": "v-cooked-leftovers",
+      "label": "Arket efter Klart (matlådor + skafferiavdrag)",
+      "context": "view",
+      "path": "lib/views/pantry/cooked_pantry_flow.dart, lib/widgets/pantry/meal_boxes/cooked_leftovers_sheet.dart"
+    },
+    {
+      "id": "vm-meal-boxes",
+      "label": "Matlåde-vy-modell",
+      "context": "viewmodel",
+      "path": "lib/viewmodels/pantry/meal_boxes_viewmodel.dart"
+    },
+    {
+      "id": "svc-meal-box",
+      "label": "MealBoxService",
+      "context": "service",
+      "path": "lib/services/menu/meal_box_service.dart"
+    },
+    {
+      "id": "repo-meal-box",
+      "label": "Matlåde-repository",
+      "context": "repository",
+      "path": "lib/repositories/firebase/firebase_meal_box_repository.dart"
+    },
+    {
+      "id": "ds-meal-boxes",
+      "label": "meal_boxes (Firestore)",
+      "context": "datastore",
+      "path": "users/{uid}/meal_boxes/{id}"
     }
   ],
   "actions": [
@@ -8188,6 +8224,77 @@
         }
       ],
       "area": "övrigt"
+    },
+    {
+      "id": "flow-cook-6",
+      "label": "matlådor i kyl och frys",
+      "description": "BUT-2486 del 5, bakom flaggan enable_meal_boxes (av = ingen läsning av meal_boxes och inga av vyerna). Efter Klart föreslår appen att spara resten som matlådor (lagade portioner minus hushållets storlek, ingen extra läsning) i samma ark som skafferiavdraget; ett Ångra tar tillbaka båda. Lådorna visas som ett eget block överst i Skafferiet med plus/minus på det som är kvar; ett tryck på en låda öppnar lådmenyn: planera som lunch (byter till Meny-fliken), flytta mellan kyl och frys (det som är kvar blir en ny låda daterad i dag; lådor som en planerad lunch tar stannar), ändra antal och datum (datumet låst medan en lunch är planerad ur lådan) och ta bort med Ångra. Luncharket listar lådor med något kvar under Ur kylen och frysen; en vald låda räknas bort när veckan sparas (flow-menu-1). Skrivningar väntar högst 2 s och lämnas annars i Firestores kö.",
+      "steps": [
+        {
+          "from": "v-pantry",
+          "to": "vm-meal-boxes",
+          "payload": "load() i samma post-frame som skafferiet, bara med flaggan på",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "vm-meal-boxes",
+          "to": "svc-meal-box",
+          "payload": "list() (viker in passerade luncher, städar lådor tomma i 30 dagar), shown() döljer tomma lådor utan luncher",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-meal-boxes-block",
+          "to": "vm-meal-boxes",
+          "payload": "setRemaining / move + undoMove / setStoredOn / remove + restore",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "svc-meal-box",
+          "to": "repo-meal-box",
+          "payload": "list, add, setCount, foldTakes, delete, restore, setStoredOn, move, undoMove (move och undoMove är en batch var)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "repo-meal-box",
+          "to": "ds-meal-boxes",
+          "payload": "läs högst 200; skrivningar via awaitOrLeaveQueued (2 s, sedan kvar i kön)",
+          "transport": "firestore",
+          "verified": true
+        },
+        {
+          "from": "v-recipe-detail",
+          "to": "v-cooked-leftovers",
+          "payload": "Klart (och efter betygsskärmen): offerCookedPantry → CookedPantryFlow.offer(recept, portioner)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-cooked-leftovers",
+          "to": "svc-meal-box",
+          "payload": "add(låda: recept, kyl/frys, i dag, antal); Ångra = remove(id)",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-cooked-leftovers",
+          "to": "svc-pantry",
+          "payload": "takeCooked / undoTakeCooked för de valda skafferiraderna",
+          "transport": "method call",
+          "verified": true
+        },
+        {
+          "from": "v-lunchbox-sheet",
+          "to": "svc-meal-box",
+          "payload": "list() när arket öppnas (arket väntar inte); vald låda → Lunchbox.fromStock",
+          "transport": "method call",
+          "verified": true
+        }
+      ],
+      "area": "matlagning & skafferi"
     }
   ]
 }</script>

@@ -7050,6 +7050,11 @@ from a box is a lunchbox stored as previous-week leftovers plus `mealBoxId`,
   no `count` and no `takes`; `MealBoxService` removes such a box 30 days after its `updatedAt`.
 - What is left can differ from what is really in the fridge or freezer; the user corrects it
   with +/−. No server-side reconciliation.
+- Part 5b (2026-11-25): the boxes stay on Firestore's queue, like the pantry (BUT-2288).
+  `FirebaseMealBoxRepository`'s add, count, fold, delete, restore, date and move wait for the
+  server at most 2 s (`awaitOrLeaveQueued`) and then return with the write left queued. A
+  refusal after that is logged, not shown. A move is one batch, so a move refused that late
+  also takes back the new box whose id was already returned to the app. No `opId`.
 
 ## BUT-2494 — allergy reminders on the shopping list (Malin, 2026-11-24)
 

@@ -23228,4 +23228,257 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuWishSaved => 'Wish saved';
+
+  @override
+  String mealBoxesHeading(int count) {
+    return 'Meal boxes · $count';
+  }
+
+  @override
+  String get mealBoxesLoading => 'Fetching your meal boxes …';
+
+  @override
+  String get mealBoxesLoadFailed => 'Could not fetch your meal boxes';
+
+  @override
+  String get mealBoxChangeFailed => 'Could not change the number of meal boxes';
+
+  @override
+  String mealBoxEmptiedUndo(String title) {
+    return '$title is all gone';
+  }
+
+  @override
+  String get mealBoxLocationFridge => 'Fridge';
+
+  @override
+  String get mealBoxLocationFreezer => 'Freezer';
+
+  @override
+  String mealBoxSubtitleFridge(String when) {
+    return 'Fridge · made $when';
+  }
+
+  @override
+  String mealBoxSubtitleFreezer(String date) {
+    return 'Freezer · $date';
+  }
+
+  @override
+  String get mealBoxStoredToday => 'today';
+
+  @override
+  String mealBoxTakenOn(int count, String day) {
+    return '$count taken $day';
+  }
+
+  @override
+  String mealBoxTakenMany(int count) {
+    return '$count planned';
+  }
+
+  @override
+  String mealBoxLunchSubtitleFridge(int count) {
+    return 'In the fridge · $count left';
+  }
+
+  @override
+  String mealBoxLunchSubtitleFreezer(int count) {
+    return 'Freezer · $count left';
+  }
+
+  @override
+  String a11yMealBoxFewer(String title) {
+    return 'Fewer boxes of $title';
+  }
+
+  @override
+  String a11yMealBoxMore(String title) {
+    return 'More boxes of $title';
+  }
+
+  @override
+  String get a11yCookedLeftoversFewer => 'Fewer meal boxes';
+
+  @override
+  String get a11yCookedLeftoversMore => 'More meal boxes';
+
+  @override
+  String cookedLeftoversTitle(int portions) {
+    String _temp0 = intl.Intl.pluralLogic(
+      portions,
+      locale: localeName,
+      other: '$portions portions',
+      one: '1 portion',
+    );
+    return 'Done! You made $_temp0';
+  }
+
+  @override
+  String get cookedLeftoversOverHeading => 'Any left over?';
+
+  @override
+  String get cookedLeftoversBoxes => 'Meal boxes';
+
+  @override
+  String cookedLeftoversEaters(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count of you ate',
+      one: 'You ate one portion',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookedLeftoversPantryHeading => 'Take from the pantry';
+
+  @override
+  String cookedLeftoversPantrySummary(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count items are taken',
+      one: '1 item is taken',
+      zero: 'Nothing is taken',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get cookedLeftoversChange => 'Change';
+
+  @override
+  String mealBoxSavedFridge(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count meal boxes',
+      one: 'Saved 1 meal box',
+    );
+    return '$_temp0 in the fridge';
+  }
+
+  @override
+  String mealBoxSavedFreezer(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Saved $count meal boxes',
+      one: 'Saved 1 meal box',
+    );
+    return '$_temp0 in the freezer';
+  }
+
+  @override
+  String mealBoxSavedWithPantry(int boxes, int items) {
+    String _temp0 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: 'Saved $boxes meal boxes',
+      one: 'Saved 1 meal box',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      items,
+      locale: localeName,
+      other: '$items items',
+      one: '1 item',
+    );
+    return '$_temp0 and took $_temp1 from the pantry';
+  }
+
+  @override
+  String get mealBoxSaveFailed => 'Could not save the meal boxes';
+
+  @override
+  String get mealBoxAndPantryFailed =>
+      'Could not save the meal boxes or take anything out of the pantry';
+
+  @override
+  String get mealBoxUndoFailed => 'Could not undo the meal boxes';
+
+  @override
+  String get lunchboxStockHeading => 'From the fridge and freezer';
+
+  @override
+  String get lunchboxStockEmpty =>
+      'Save leftovers as meal boxes when you tap Done after cooking';
+
+  @override
+  String mealBoxActionsTitle(String title, int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count boxes',
+      one: '1 box',
+    );
+    return '$title · $_temp0';
+  }
+
+  @override
+  String get mealBoxActionPlan => 'Plan as lunch';
+
+  @override
+  String get mealBoxActionPlanHint => 'Pick a day in the weekly menu';
+
+  @override
+  String get mealBoxActionMoveToFreezer => 'Move to the freezer';
+
+  @override
+  String get mealBoxActionMoveToFridge => 'Move to the fridge';
+
+  @override
+  String get mealBoxActionMoveHint => 'The date becomes today';
+
+  @override
+  String get mealBoxActionEdit => 'Change number and date';
+
+  @override
+  String get mealBoxActionRemove => 'Remove';
+
+  @override
+  String get mealBoxEditCountLabel => 'Boxes left';
+
+  @override
+  String get mealBoxEditDateLabel => 'Date';
+
+  @override
+  String get mealBoxEditDateLocked =>
+      'The date can be changed when no lunch is planned from the box';
+
+  @override
+  String a11yMealBoxEditDate(String title) {
+    return 'Change the date of $title';
+  }
+
+  @override
+  String mealBoxMovedFridge(String title) {
+    return '$title moved to the fridge';
+  }
+
+  @override
+  String mealBoxMovedFreezer(String title) {
+    return '$title moved to the freezer';
+  }
+
+  @override
+  String get mealBoxMoveFailed => 'Could not move the meal box';
+
+  @override
+  String get mealBoxMoveUndoFailed => 'Could not undo the move';
+
+  @override
+  String mealBoxRemovedUndo(String title) {
+    return '$title removed';
+  }
+
+  @override
+  String get mealBoxRemoveFailed => 'Could not remove the meal box';
+
+  @override
+  String get mealBoxRestoreFailed => 'Could not undo the removal';
+
+  @override
+  String get mealBoxDateFailed => 'Could not change the date';
 }

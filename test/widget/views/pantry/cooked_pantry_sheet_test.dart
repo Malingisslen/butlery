@@ -34,7 +34,11 @@ void main() {
   List<CookedPantryTake>? result;
   var closed = false;
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(
+    WidgetTester tester, {
+    List<CookedPantryTake>? selected,
+    bool allowEmpty = false,
+  }) async {
     result = null;
     closed = false;
     await tester.pumpWidget(
@@ -46,6 +50,8 @@ void main() {
                 context,
                 takes: takes,
                 portions: 4,
+                selected: selected,
+                allowEmpty: allowEmpty,
               );
               closed = true;
             },
@@ -169,4 +175,38 @@ void main() {
     expect([for (final t in result!) t.item.id], ['a']);
     expect(result!.single.amount, 2);
   });
+
+  testWidgets(
+    'reopened with an earlier choice, an unticked row stays unticked',
+    (
+      tester,
+    ) async {
+      await open(tester, selected: [takes.first.withAmount(1)]);
+
+      expect(find.text('Dra av 1 vara'), findsOneWidget);
+      await tester.tap(find.text('Dra av 1 vara'));
+      await tester.pumpAndSettle();
+
+      expect([for (final t in result!) t.item.id], ['a']);
+      expect(result!.single.amount, 1);
+    },
+  );
+
+  testWidgets(
+    'with allowEmpty, Spara answers an empty choice, which is not a skip',
+    (tester) async {
+      await open(tester, allowEmpty: true);
+
+      await tester.tap(find.text('Mjöl'));
+      await tester.tap(find.text('Socker'));
+      await tester.pump();
+      expect(find.text('Dra av 0 varor'), findsNothing);
+      await tester.tap(find.text('Spara'));
+      await tester.pumpAndSettle();
+
+      expect(closed, isTrue);
+      expect(result, isNotNull);
+      expect(result, isEmpty);
+    },
+  );
 }

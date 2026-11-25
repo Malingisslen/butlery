@@ -14,4 +14,17 @@ abstract class MealBoxRepository {
   Future<void> foldTakes(MealBox box, Iterable<String> eatenKeys);
 
   Future<void> delete(String id);
+
+  /// Writes [box] back under its own id, takes included: undoes a [delete].
+  Future<void> restore(MealBox box);
+
+  Future<void> setStoredOn(String id, DateTime storedOn);
+
+  /// Moves what is left of [box] into a new box at [to], stored on
+  /// [storedOn], and returns its id. The boxes planned lunches take stay in
+  /// [box]; with none planned, [box] is deleted. One batch.
+  Future<String> move(MealBox box, MealBoxLocation to, DateTime storedOn);
+
+  /// Undoes [move]: deletes [movedId] and writes [original] back. One batch.
+  Future<void> undoMove(MealBox original, String movedId);
 }

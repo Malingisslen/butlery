@@ -16,6 +16,7 @@ import 'package:butlery/viewmodels/menu/weekly_lunchboxes.dart';
 import 'package:butlery/viewmodels/menu/weekly_menu_plan_viewmodel.dart';
 import 'package:butlery/widgets/common/dialogs/recipe_selection_dialogs.dart';
 import 'package:butlery/widgets/menu/calendar/lunchbox_sheet.dart';
+import 'package:butlery/widgets/menu/calendar/lunchbox_stock_section.dart';
 import 'package:butlery/widgets/menu/manual_add_confirm.dart';
 
 /// Shows [day]'s lunchbox sheet and saves or removes the box it answers
@@ -47,6 +48,7 @@ Future<void> openLunchboxFlow(
     suggestions: vm.lunchboxSuggestions,
     roster: roster,
     pickRecipe: _pickRecipe,
+    stockBoxes: startLunchboxStockLoad(),
   );
   if (!context.mounted) return;
   switch (result) {
