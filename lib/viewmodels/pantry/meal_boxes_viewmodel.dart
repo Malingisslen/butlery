@@ -27,6 +27,10 @@ class MealBoxesViewModel extends BaseViewModel {
   /// is hidden.
   List<MealBox> get boxes => MealBoxService.shown(_boxes);
 
+  /// The stored box with [id], hidden or not: an open edit sheet keeps
+  /// showing a box the stepper just took to 0.
+  MealBox? byId(String id) => _boxes.where((b) => b.id == id).firstOrNull;
+
   int get totalRemaining => boxes.fold(0, (sum, box) => sum + box.remaining);
 
   Future<void> load() async {

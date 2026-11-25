@@ -519,6 +519,33 @@ void main() {
       verify(() => boxes.setRemaining(any(), 3)).called(1);
     });
 
+    testWidgets(
+      'the edit sheet keeps a box it took to 0 and counts up from 0',
+      (
+        tester,
+      ) async {
+        await pump(tester);
+        await openMenu(tester, 'Linsgryta');
+        await tester.tap(find.byKey(const ValueKey('meal-box-action-edit')));
+        await tester.pumpAndSettle();
+
+        await tester.tap(inSheet(const ValueKey('meal-box-minus')));
+        await tester.pump();
+        expect(sheetValue(tester), '0');
+
+        await tester.tap(inSheet(const ValueKey('meal-box-plus')));
+        await tester.pump();
+        expect(sheetValue(tester), '1');
+        final sent = verify(
+          () => boxes.setRemaining(captureAny(), captureAny()),
+        ).captured;
+        expect(sent, hasLength(4));
+        expect(sent[1], 0);
+        expect((sent[2] as MealBox).count, 0);
+        expect(sent[3], 1);
+      },
+    );
+
     Future<DateTime> pickDateOk(WidgetTester tester, MealBox box) async {
       when(() => boxes.list()).thenAnswer((_) async => [box]);
       await pump(tester);

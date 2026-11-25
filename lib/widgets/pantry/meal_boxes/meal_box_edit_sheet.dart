@@ -85,8 +85,7 @@ class MealBoxEditSheet extends StatelessWidget {
       child: ListenableBuilder(
         listenable: viewModel,
         builder: (context, _) {
-          final now =
-              viewModel.boxes.where((b) => b.id == box.id).firstOrNull ?? box;
+          final now = viewModel.byId(box.id) ?? box;
           final locked = now.takes.isNotEmpty;
           return Column(
             mainAxisSize: MainAxisSize.min,
