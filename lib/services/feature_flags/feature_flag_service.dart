@@ -59,6 +59,11 @@ class FeatureFlagService {
     // BUT-2490: a group's fixed days in the group week. Gates the app only.
     'enable_group_recurring_rules': false,
 
+    // BUT-2486 part 5: fridge and freezer boxes in the app — the Skafferiet
+    // block, the boxes after "Klart" and the lunch sheet's "Ur kylen och
+    // frysen". Gates the app only. On, so it can be switched off remotely.
+    'enable_meal_boxes': true,
+
     // Safety Flags (kill switches)
     'enable_social_features': true,
     'enable_sharing': true,
@@ -499,6 +504,8 @@ abstract final class FeatureFlags {
   // A group's fixed days (BUT-2490): the group week's band, marks and cells,
   // and the group scope of the rule screens. Gates the app, not the callable.
   static const enableGroupRecurringRules = 'enable_group_recurring_rules';
+  // Fridge and freezer boxes (BUT-2486 part 5). Gates the app's views only.
+  static const enableMealBoxes = 'enable_meal_boxes';
   // Layout-aware recipe splitting — the split path is LIVE behind this flag;
   // see the defaults map above for the chain and the measured result.
   static const enableLayoutRecipeSplit = 'enable_layout_recipe_split';
