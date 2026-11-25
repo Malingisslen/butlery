@@ -35585,6 +35585,36 @@ abstract class AppLocalizations {
   /// In sv, this message translates to:
   /// **'Kunde inte ändra datumet'**
   String get mealBoxDateFailed;
+
+  /// BUT-2486 part 6: heading over the weekday chips in the week menu's empty state.
+  ///
+  /// In sv, this message translates to:
+  /// **'Matlåda till lunch'**
+  String get menuLunchboxDaysTitle;
+
+  /// BUT-2486 part 6: line under the weekday chips.
+  ///
+  /// In sv, this message translates to:
+  /// **'Förslaget tar lådor ur kylen först, sedan frysen, äldst först. Kyllådor äldre än 5 dagar hoppas över.'**
+  String get menuLunchboxDaysHint;
+
+  /// BUT-2486 part 6: snackbar after a suggestion that also placed fridge or freezer boxes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{count, plural, =1{1 recept} other{{count} recept}} och {boxes, plural, =1{1 matlåda} other{{boxes} matlådor}} placerade i kalendern'**
+  String menuAutoPlacedWithBoxesToast(int count, int boxes);
+
+  /// BUT-2486 part 6: snackbar when a suggestion placed boxes but no dishes.
+  ///
+  /// In sv, this message translates to:
+  /// **'{boxes, plural, =1{1 matlåda placerad} other{{boxes} matlådor placerade}} i kalendern'**
+  String menuAutoPlacedBoxesOnlyToast(int boxes);
+
+  /// BUT-2486 part 6: info line when the boxes could not be read for a suggestion.
+  ///
+  /// In sv, this message translates to:
+  /// **'Kyl och frys kunde inte läsas, så inga matlådor lades in.'**
+  String get menuStockLunchesUnreadable;
 }
 
 class _AppLocalizationsDelegate

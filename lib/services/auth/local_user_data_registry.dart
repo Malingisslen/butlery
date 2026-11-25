@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/core/utils/logger.dart';
+import 'package:butlery/services/menu/lunchbox_days_store.dart';
 import 'package:butlery/services/menu/weekly_menu_draft_store.dart';
 import 'package:butlery/services/menu/weekly_menu_plan_service.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
@@ -82,6 +83,7 @@ class LocalUserDataRegistry {
     unawaited(image_store.clearStagedDraftImage());
     await WeeklyMenuOverflowTrayStore.clearAll(userId: userId);
     await WeeklyMenuDraftStore.clearAll(userId: userId);
+    await LunchboxDaysStore.clearAll();
     await RecipeFormAutoSaveManager.clearDraftsFor(userId);
     if (firestoreWritesSettled) {
       await FirestoreCacheWipe.request();

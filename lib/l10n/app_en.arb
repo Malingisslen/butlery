@@ -19165,5 +19165,38 @@
   "mealBoxDateFailed": "Could not change the date",
   "@mealBoxDateFailed": {
     "description": "BUT-2486 part 5: failure snackbar."
+  },
+  "menuLunchboxDaysTitle": "Lunchbox days",
+  "@menuLunchboxDaysTitle": {
+    "description": "BUT-2486 part 6: heading over the weekday chips in the week menu's empty state."
+  },
+  "menuLunchboxDaysHint": "The suggestion takes boxes from the fridge first, then the freezer, oldest first. Fridge boxes older than 5 days are skipped.",
+  "@menuLunchboxDaysHint": {
+    "description": "BUT-2486 part 6: line under the weekday chips."
+  },
+  "menuAutoPlacedWithBoxesToast": "{count, plural, =1{1 recipe} other{{count} recipes}} and {boxes, plural, =1{1 lunchbox} other{{boxes} lunchboxes}} placed in the calendar",
+  "@menuAutoPlacedWithBoxesToast": {
+    "description": "BUT-2486 part 6: snackbar after a suggestion that also placed fridge or freezer boxes.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "boxes": {
+        "type": "int"
+      }
+    }
+  },
+  "menuAutoPlacedBoxesOnlyToast": "{boxes, plural, =1{1 lunchbox placed} other{{boxes} lunchboxes placed}} in the calendar",
+  "@menuAutoPlacedBoxesOnlyToast": {
+    "description": "BUT-2486 part 6: snackbar when a suggestion placed boxes but no dishes.",
+    "placeholders": {
+      "boxes": {
+        "type": "int"
+      }
+    }
+  },
+  "menuStockLunchesUnreadable": "The fridge and freezer could not be read, so no lunchboxes were added.",
+  "@menuStockLunchesUnreadable": {
+    "description": "BUT-2486 part 6: info line when the boxes could not be read for a suggestion."
   }
 }

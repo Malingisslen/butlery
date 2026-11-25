@@ -25,6 +25,10 @@ These services intentionally don't extend `BaseService` because they're pure-com
   a shopping row gets from its ingredient properties; no async, no Firebase)
 - `lib/services/shopping/dismissed_dietary_hints_store.dart` (device-local SharedPreferences
   store for ticked-away reminders; no Firebase, never throws)
+- `lib/services/menu/stock_lunch_planner.dart` (pure function — which fridge and freezer
+  boxes a suggested week takes as lunches; no async, no Firebase)
+- `lib/services/menu/lunchbox_days_store.dart` (device-local SharedPreferences store for
+  the weekdays that need a lunchbox; no Firebase, never throws)
 - `lib/services/import/multi_recipe_splitter.dart` (pure-compute rule engine — splits a
   cookbook spread into per-recipe blocks; no async, no Firebase, no LLM)
 - `lib/services/import/layout/heading_detector.dart` (pure-compute — finds recipe

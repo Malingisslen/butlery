@@ -1,8 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:butlery/models/menu/menu_wish.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
+import 'package:butlery/services/menu/lunchbox_days_store.dart';
 import 'package:butlery/viewmodels/menu_wishes_viewmodel.dart';
 
 import '../../helpers/fake_menu_wish_profile.dart';
@@ -205,5 +208,111 @@ void main() {
 
       expect(profile.lastWrites, isEmpty);
     });
+  });
+
+  group('lunchbox days', () {
+    const store = LunchboxDaysStore();
+    var uid = 'u-1';
+
+    MenuWishesViewModel buildDays({bool on = true, String? Function()? user}) =>
+        MenuWishesViewModel(
+          reader: profile,
+          editor: profile,
+          currentUserId: user ?? () => uid,
+          mealBoxesOn: () => on,
+        );
+
+    setUp(() {
+      SharedPreferences.setMockInitialValues({});
+      uid = 'u-1';
+      profile = FakeMenuWishProfile();
+    });
+
+    test('the choice kept on this device from last week is loaded and '
+        'announced', () async {
+      await store.write('u-1', {DayOfWeek.tue, DayOfWeek.thu});
+      vm = buildDays();
+      var notifications = 0;
+      vm.addListener(() => notifications++);
+
+      expect(vm.offersLunchboxDays, isTrue);
+      expect(vm.lunchboxDays, isEmpty, reason: 'the read has not answered yet');
+      await pumpEventQueue();
+
+      expect(vm.lunchboxDays, {DayOfWeek.tue, DayOfWeek.thu});
+      expect(notifications, greaterThanOrEqualTo(1));
+    });
+
+    test('toggling adds then removes a day and persists each step for this '
+        'account only', () async {
+      vm = buildDays();
+      await pumpEventQueue();
+
+      vm.toggleLunchboxDay(DayOfWeek.mon);
+      vm.toggleLunchboxDay(DayOfWeek.fri);
+      await pumpEventQueue();
+      expect(vm.lunchboxDays, {DayOfWeek.mon, DayOfWeek.fri});
+      expect(await store.read('u-1'), {DayOfWeek.mon, DayOfWeek.fri});
+      expect(await store.read('u-2'), isEmpty);
+
+      vm.toggleLunchboxDay(DayOfWeek.mon);
+      await pumpEventQueue();
+      expect(vm.lunchboxDays, {DayOfWeek.fri});
+      expect(await store.read('u-1'), {DayOfWeek.fri});
+    });
+
+    test('a tap made while the stored choice is still being read wins over '
+        'it', () async {
+      await store.write('u-1', {DayOfWeek.tue});
+      vm = buildDays();
+
+      vm.toggleLunchboxDay(DayOfWeek.sun);
+      await pumpEventQueue();
+
+      expect(vm.lunchboxDays, {DayOfWeek.sun});
+      expect(await store.read('u-1'), {DayOfWeek.sun});
+    });
+
+    test('a day tapped on and off again while the stored choice is being read '
+        'stays cleared', () async {
+      await store.write('u-1', {DayOfWeek.tue});
+      vm = buildDays();
+
+      vm.toggleLunchboxDay(DayOfWeek.sun);
+      vm.toggleLunchboxDay(DayOfWeek.sun);
+      await pumpEventQueue();
+
+      expect(vm.lunchboxDays, isEmpty);
+      expect(await store.read('u-1'), isEmpty);
+    });
+
+    test('the switch off offers nothing and reads nothing', () async {
+      await store.write('u-1', {DayOfWeek.tue});
+      vm = buildDays(on: false);
+      await pumpEventQueue();
+
+      expect(vm.offersLunchboxDays, isFalse);
+      expect(vm.lunchboxDays, isEmpty);
+    });
+
+    test(
+      'signed out, a toggle shows on screen but is written nowhere',
+      () async {
+        vm = buildDays(user: () => null);
+        await pumpEventQueue();
+
+        vm.toggleLunchboxDay(DayOfWeek.wed);
+        await pumpEventQueue();
+
+        expect(vm.lunchboxDays, {DayOfWeek.wed});
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getKeys().where(
+            (k) => k.startsWith(LunchboxDaysStore.keyPrefix),
+          ),
+          isEmpty,
+        );
+      },
+    );
   });
 }

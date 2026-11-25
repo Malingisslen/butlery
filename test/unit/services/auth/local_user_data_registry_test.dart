@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:butlery/core/bootstrap/firestore_cache_wipe.dart';
 import 'package:butlery/services/auth/local_user_data_registry.dart';
+import 'package:butlery/services/menu/lunchbox_days_store.dart';
 import 'package:butlery/services/persistence/auto_save_manager.dart';
 import 'package:butlery/services/shopping/dismissed_dietary_hints_store.dart';
 import 'package:butlery/services/shopping/store_order_learner.dart';
@@ -152,6 +153,36 @@ void main() {
             (k) => k.startsWith(DismissedDietaryHintsStore.keyPrefix),
           ),
           isEmpty,
+        );
+        expect(prefs.containsKey('unrelated_setting'), isTrue);
+      },
+    );
+  }
+
+  // The lunchbox weekdays are a convenience, cleared with the drafts on an
+  // explicit sign-out and kept through an automatic one (BUT-2486 part 6).
+  for (final reason in DeviceCleanupReason.values) {
+    final clears = reason != DeviceCleanupReason.automaticSignOut;
+    test(
+      'a $reason ${clears ? 'clears' : 'keeps'} every account\'s lunchbox days',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          ..._everyDraft(),
+          '${LunchboxDaysStore.keyPrefix}alice': ['mon', 'tue'],
+          '${LunchboxDaysStore.keyPrefix}bob': ['fri'],
+        });
+
+        await LocalUserDataRegistry.clearDrafts(
+          userId: 'alice',
+          reason: reason,
+        );
+
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getKeys().where(
+            (k) => k.startsWith(LunchboxDaysStore.keyPrefix),
+          ),
+          clears ? isEmpty : hasLength(2),
         );
         expect(prefs.containsKey('unrelated_setting'), isTrue);
       },

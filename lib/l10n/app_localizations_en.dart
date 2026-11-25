@@ -23481,4 +23481,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get mealBoxDateFailed => 'Could not change the date';
+
+  @override
+  String get menuLunchboxDaysTitle => 'Lunchbox days';
+
+  @override
+  String get menuLunchboxDaysHint =>
+      'The suggestion takes boxes from the fridge first, then the freezer, oldest first. Fridge boxes older than 5 days are skipped.';
+
+  @override
+  String menuAutoPlacedWithBoxesToast(int count, int boxes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count recipes',
+      one: '1 recipe',
+    );
+    String _temp1 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: '$boxes lunchboxes',
+      one: '1 lunchbox',
+    );
+    return '$_temp0 and $_temp1 placed in the calendar';
+  }
+
+  @override
+  String menuAutoPlacedBoxesOnlyToast(int boxes) {
+    String _temp0 = intl.Intl.pluralLogic(
+      boxes,
+      locale: localeName,
+      other: '$boxes lunchboxes placed',
+      one: '1 lunchbox placed',
+    );
+    return '$_temp0 in the calendar';
+  }
+
+  @override
+  String get menuStockLunchesUnreadable =>
+      'The fridge and freezer could not be read, so no lunchboxes were added.';
 }

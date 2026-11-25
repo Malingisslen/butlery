@@ -1,3 +1,7 @@
+# Aktiv plan (2026-11-25): BUT-2486 matlådor, del 6 (lådor som luncher i veckoförslaget)
+
+Se `tasks/but-2486-del6-plan.md` (kopia i /mnt/project-files/plans/but-2486-del6-lador-i-forslaget-plan.md). Malin valde via kort 2026-11-25: dagar i önskemålen, kyl och frys, kylens lådor högst 5 dagar; mockupen godkänd 23:17; koordinatorn gav klartecken samma kväll.
+
 # Aktiv plan (2026-11-24): BUT-2486 matlådor, del 5 (lådor i kyl och frys)
 
 Se `tasks/but-2486-del5-plan.md`. Malins beslut via kort 2026-11-24 (lådor i kyl/frys, automatisk in/ut som går att rätta, förslag efter matlagning); full panel klar (ADR-0045).

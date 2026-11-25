@@ -7108,3 +7108,22 @@ document.
   member. What changes for child safety: a write that changes neither field no longer gives
   a group a second check after a failed run; `retry: true` is what re-runs a failed run.
   Awaiting the child-safety stakeholder's decision.
+
+## Fridge and freezer boxes in the suggested week (BUT-2486 part 6, 2026-11-25)
+
+When the week is suggested, `StockLunchFill` reads the boxes once and `StockLunchPlanner`
+places one box per chosen weekday whose lunch is empty, fridge before freezer, oldest first,
+skipping fridge boxes more than 5 days old on the lunch day (Malin 2026-11-25).
+
+- **The automatic pick is stricter than a hand pick.** A hand-picked box is checked by
+  `confirmManualAdd` only when its recipe resolves, and an unchecked allergen does not ask
+  (`ManualAddFinding.needsConfirmation`); the calendar then marks it "Ej bedömd för
+  allergier". The automatic pick places a box only when its recipe is loaded, passes
+  `filterByPrefs` for allergens and for diets against the household
+  (`MenuGenerator.resolveHouseholdPrefs`), and `ManualAddCheck.findingAt` at lunch finds
+  nothing (contains, unchecked or disliked). If the boxes or the household cannot be read,
+  no box is placed. Do not harmonise the two: the app chooses here without asking.
+- **The chosen weekdays live on the device only** (`LunchboxDaysStore`, keyed by the
+  account, cleared on sign-out). A new phone starts with none chosen; no cloud field and no
+  policy line.
+

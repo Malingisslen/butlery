@@ -28,6 +28,10 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
   /// Pantry flag of the ready-made wish still sitting in the prompt field.
   bool get fillPantryFocus;
 
+  /// The weekdays the suggestion fills with fridge and freezer boxes
+  /// (BUT-2486 part 6); empty when the choice is not offered.
+  Set<DayOfWeek> get lunchboxDays;
+
   /// Runs once for a generation from the prompt field that produced a menu.
   Future<void> afterMenuGenerated({
     required String text,
@@ -129,7 +133,7 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
           // draft.
           unawaited(menuVm.markDraftSaved());
           if (!mounted) return;
-          if (placed > 0) showAutoPlacedToast(placed);
+          showAutoPlacedToast(placed);
           if (unmatchedNotice != null) {
             _showUnmatchedNotice(unmatchedNotice);
           }
@@ -190,6 +194,7 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
       menuVm.menu,
       replaceExisting: true,
       parsedRequest: parsed,
+      lunchboxDays: lunchboxDays,
       onPublished: onPublished,
     );
     if (placed == null && mounted) {
@@ -225,16 +230,28 @@ mixin VeckomenyPlacementFlow<T extends StatefulWidget> on State<T> {
         unawaited(menuVm.markDraftSaved());
         if (!mounted) return;
         unawaited(setViewMode(VeckomenyViewMode.kalender));
-        // placed == 0 (everything overflowed) skips the toast — the calendar's
-        // overflow tray explains the outcome better than a "0 placed" snackbar.
-        if (placed > 0) showAutoPlacedToast(placed);
+        showAutoPlacedToast(placed);
       },
     );
   }
 
+  /// Nothing placed skips the receipt: the overflow tray explains it
+  /// better. A suggestion that asked for boxes and could not read them says
+  /// so on its own line (BUT-2486 part 6).
   void showAutoPlacedToast(int placed) {
+    final calendarVm = context.read<WeeklyMenuPlanViewModel>();
+    final boxes = calendarVm.lastStockLunchCount;
+    if (calendarVm.lastStockLunchReadFailed) {
+      SnackBarUtils.showInfo(context, context.l10n.menuStockLunchesUnreadable);
+    }
+    if (placed == 0 && boxes == 0) return;
+    final l10n = context.l10n;
     UndoSnackBar.capture(context).showReceipt(
-      context.l10n.menuAutoPlacedToast(placed),
+      boxes == 0
+          ? l10n.menuAutoPlacedToast(placed)
+          : placed == 0
+          ? l10n.menuAutoPlacedBoxesOnlyToast(boxes)
+          : l10n.menuAutoPlacedWithBoxesToast(placed, boxes),
       actionLabel: context.l10n.menuAutoPlacedChangeAction,
       onAction: () => unawaited(openPlacement(redoAuto: true)),
     );

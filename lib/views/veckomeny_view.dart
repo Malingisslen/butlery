@@ -12,6 +12,7 @@ import 'package:butlery/core/extensions/localization_extension.dart';
 import 'package:butlery/core/providers/application_provider.dart';
 import 'package:butlery/core/utils/iso_week_utils.dart';
 import 'package:butlery/core/utils/snackbar_utils.dart';
+import 'package:butlery/models/menu/weekly_menu_plan.dart';
 import 'package:butlery/models/shared_menu.dart';
 import 'package:butlery/services/persistence_service.dart';
 import 'package:butlery/services/unified/friends/friends_service_roles.dart';
@@ -113,6 +114,10 @@ class _VeckomenyViewContentState extends State<_VeckomenyViewContent>
 
   @override
   bool get fillPantryFocus => _activeFill?.pantryFocus ?? false;
+
+  @override
+  Set<DayOfWeek> get lunchboxDays =>
+      wishesVm.offersLunchboxDays ? wishesVm.lunchboxDays : const {};
 
   @override
   void initState() {

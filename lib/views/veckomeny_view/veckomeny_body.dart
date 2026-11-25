@@ -21,6 +21,7 @@ import 'package:butlery/widgets/realtime/conflict_banner.dart';
 import 'package:butlery/widgets/voice/voice_prompt_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_prompt_row.dart';
 import 'package:butlery/viewmodels/menu_wishes_viewmodel.dart';
+import 'package:butlery/widgets/menu/veckomeny_lunchbox_days.dart';
 import 'package:butlery/widgets/menu/veckomeny_quick_picks.dart';
 import 'package:butlery/widgets/menu/veckomeny_save_week_button.dart';
 import 'package:butlery/widgets/menu/veckomeny_selection_widgets.dart';
@@ -172,6 +173,15 @@ class VeckomenyBody extends StatelessWidget {
                               VeckomenyQuickPicks(
                                 activeSourceId: activeWishSourceId,
                                 onPick: onPickWish,
+                              ),
+                            if (wishes case final wishes?
+                                when wishes.offersLunchboxDays)
+                              ListenableBuilder(
+                                listenable: wishes,
+                                builder: (context, _) => VeckomenyLunchboxDays(
+                                  selected: wishes.lunchboxDays,
+                                  onToggle: wishes.toggleLunchboxDay,
+                                ),
                               ),
                             ButleryListRow(
                               label: context.l10n.menuSavedWeeksRow,

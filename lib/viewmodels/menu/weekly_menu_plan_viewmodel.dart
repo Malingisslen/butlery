@@ -21,6 +21,7 @@ import 'package:butlery/services/unified/unified_recipe_service.dart';
 import 'package:butlery/services/menu/meal_slot_mapper.dart';
 import 'package:butlery/viewmodels/base_viewmodel.dart';
 import 'package:butlery/viewmodels/menu/meal_allergen_scope.dart';
+import 'package:butlery/viewmodels/menu/stock_lunch_fill.dart';
 import 'package:butlery/viewmodels/menu/weekly_allergen_marks.dart';
 import 'package:butlery/viewmodels/menu/weekly_lunchboxes.dart';
 
@@ -39,6 +40,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   final WeeklyMenuPlanService _service;
   final UnifiedRecipeService _recipeService;
   final MenuShoppingListGenerator _shoppingListGenerator;
+  final StockLunchFill _stockLunchFill;
 
   /// [overflowTrayStore] keeps the overflow tray on this device (P5-U24). It
   /// defaults to the SharedPreferences store; tests pass their own.
@@ -55,7 +57,9 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     Future<Map<String, Set<String>>> Function()? readDislikes,
     Future<MealAllergenScope> Function(WeeklyMenuPlan plan)? allergenScope,
     bool Function()? allergenScopeOn,
+    StockLunchFill stockLunchFill = const StockLunchFill(),
   }) : _service = service,
+       _stockLunchFill = stockLunchFill,
        _recipeService = recipeService,
        _shoppingListGenerator = shoppingListGenerator,
        _trayStore = overflowTrayStore ?? WeeklyMenuOverflowTrayStore(),
@@ -279,6 +283,12 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   // triggered the generation.
   Set<String> _recentlyPlacedEntryIds = const {};
 
+  // BUT-2486 part 6: the days whose fridge or freezer box the latest
+  // suggestion placed, for the same badge, and the outcome for the receipt.
+  Set<DayOfWeek> _recentlyPlacedLunchboxDays = const {};
+  int _lastStockLunchCount = 0;
+  bool _lastStockLunchReadFailed = false;
+
   // Snapshot kept for the 7-second undo window after clearWeek. Both the
   // visible entries AND the overflow tray are captured so undo restores the
   // full pre-clear state — clearWeek wipes both, so undo must restore both or
@@ -307,6 +317,15 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
   /// auto-distribution (renders the "NY" badge).
   bool isRecentlyPlaced(String entryId) =>
       _recentlyPlacedEntryIds.contains(entryId);
+
+  bool isLunchboxRecentlyPlaced(DayOfWeek day) =>
+      _recentlyPlacedLunchboxDays.contains(day);
+
+  /// How many fridge and freezer boxes the latest suggestion placed.
+  int get lastStockLunchCount => _lastStockLunchCount;
+
+  /// Whether the latest suggestion asked for boxes and could not read them.
+  bool get lastStockLunchReadFailed => _lastStockLunchReadFailed;
 
   /// P5-U23: the 1-based place of [entryId] in the order the latest
   /// automatic placement followed, or null when it was not part of it.
@@ -689,6 +708,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     // tray held that wasn't placed was deliberately left out.
     _setTray(_OverflowTray.empty);
     _recentlyPlacedEntryIds = recentlyPlacedEntryIds;
+    _recentlyPlacedLunchboxDays = const {};
     _placementOrder = const [];
     notifyListeners();
   }
@@ -738,6 +758,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         final fetched = read.plan;
         _plan = fetched;
         _recentlyPlacedEntryIds = const {};
+        _recentlyPlacedLunchboxDays = const {};
         _placementOrder = const [];
         // A week (re)load is a fresh context — drop any in-progress
         // selection so it can't apply to entries from a different week.
@@ -785,6 +806,7 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     DateTime? now,
     ParsedMenuRequest? parsedRequest,
     bool replaceExisting = false,
+    Set<DayOfWeek> lunchboxDays = const {},
     void Function(int placed)? onPublished,
   }) async {
     // A refused second tap returns null WITHOUT setting an error: on this
@@ -803,19 +825,30 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (_applyInFlight) return null;
     _applyInFlight = true;
     _lastApplyLeftWeekUnchanged = true;
+    _lastStockLunchCount = 0;
+    _lastStockLunchReadFailed = false;
     // Read before anything is captured: the rollback state below must be the
     // state the distribution actually builds on.
     final dislikesByMember = await _readDislikesOrNone();
     bool Function(Recipe, DayOfWeek, MealSlot)? allowedAt;
+    StockLunches stock = StockLunchFill.none;
     try {
       // The guard has to be judged on the week it is applied to: a week
-      // switch or a presence change during the read reads it again.
+      // switch or a presence change during the read reads it again. The
+      // fridge and freezer boxes are planned on that same week, inside the
+      // loop, so nothing is awaited between the check and the write.
       WeeklyMenuPlan? judged;
       DateTime judgedWeek;
       do {
         judged = _plan;
         judgedWeek = currentWeekStart;
         allowedAt = await _allowedAtFor(judged, judgedWeek);
+        stock = await _stockLunchesFor(
+          lunchboxDays,
+          replaceExisting: replaceExisting,
+          dislikesByMember: dislikesByMember,
+          now: now ?? clock.now(),
+        );
       } while (!isDisposed &&
           (!identical(_plan, judged) || currentWeekStart != judgedWeek));
     } catch (e) {
@@ -827,17 +860,25 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
       return null;
     }
     if (isDisposed) return null;
+    _lastStockLunchReadFailed = stock.readFailed;
     final previousPlan = _plan;
     final previousTray = _tray;
     final previousPlacedIds = _recentlyPlacedEntryIds;
+    final previousPlacedLunchboxDays = _recentlyPlacedLunchboxDays;
     final previousOrder = _placementOrder;
     final previousParsedRequest = _lastParsedRequest;
     int? placedCount;
     final ok = await _executeWrite(
       () async {
-        final base = replaceExisting
+        final emptied = replaceExisting
             ? _plan?.copyWith(entries: const [])
             : _plan;
+        final base = emptied == null || stock.boxes.isEmpty
+            ? emptied
+            : emptied.copyWith(
+                // A lunch chosen meanwhile wins over a planned box.
+                lunchboxes: {...stock.boxes, ...emptied.lunchboxes},
+              );
         final baseIds = base?.entries.map((e) => e.id).toSet() ?? const {};
         final result = _service.distributeFromGeneratedMenu(
           generated: generated,
@@ -872,6 +913,8 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
           ),
         );
         _recentlyPlacedEntryIds = newIds;
+        _recentlyPlacedLunchboxDays = Set.unmodifiable(stock.boxes.keys);
+        _lastStockLunchCount = stock.boxes.length;
         _placementOrder = List.unmodifiable(newIds);
         placedCount = newIds.length;
         notifyListeners();
@@ -886,12 +929,21 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
         void restoreApplyState() {
           _setTray(previousTray);
           _recentlyPlacedEntryIds = previousPlacedIds;
+          _recentlyPlacedLunchboxDays = previousPlacedLunchboxDays;
+          _lastStockLunchCount = 0;
           _placementOrder = previousOrder;
           _lastParsedRequest = previousParsedRequest;
         }
 
         try {
-          await _service.saveRevision(next);
+          // With the week it replaces, so a fridge or freezer box placed
+          // here is taken in the same batch (BUT-2486 part 6).
+          await _service.saveRevision(
+            next,
+            previous: previousPlan?.weekStartDate == next.weekStartDate
+                ? previousPlan
+                : null,
+          );
         } on WeekPlanConflictException catch (e) {
           // BUT-2215: caught here, before `_executeWrite`'s error handler, so
           // BUT-2132's one message is not touched. The server's week goes on
@@ -927,6 +979,35 @@ class WeeklyMenuPlanViewModel extends BaseViewModel {
     if (!isDisposed) notifyListeners();
     if (!ok) return null;
     return placedCount;
+  }
+
+  /// The fridge and freezer boxes a suggestion places on [days] (BUT-2486
+  /// part 6), planned on the week it will be built on. A week that changed
+  /// while the boxes were read gets none rather than a plan for another week.
+  Future<StockLunches> _stockLunchesFor(
+    Set<DayOfWeek> days, {
+    required bool replaceExisting,
+    required Map<String, Set<String>> dislikesByMember,
+    required DateTime now,
+  }) async {
+    final week = _plan;
+    if (days.isEmpty || week == null) return StockLunchFill.none;
+    final base = replaceExisting ? week.copyWith(entries: const []) : week;
+    try {
+      final stock = await _stockLunchFill.plan(
+        week: base,
+        days: days,
+        now: now,
+        recipeFor: _recipeService.getRecipeById,
+        dislikes: _dislikesFor(base, dislikesByMember),
+      );
+      if (!identical(_plan, week)) return StockLunchFill.none;
+      return stock;
+    } catch (e) {
+      // Boxes are an extra: a fault here costs them, never the week.
+      AppLogger.warning('Stock lunches failed (${e.runtimeType})');
+      return (boxes: const <DayOfWeek, Lunchbox>{}, readFailed: true);
+    }
   }
 
   /// Returns whether the entry was actually persisted. [assignFromOverflow]
