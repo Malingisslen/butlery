@@ -23304,10 +23304,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get a11yCookedLeftoversMore => 'More meal boxes';
 
   @override
-  String get a11yCookedLeftoversChangePantry =>
-      'Change what is taken from the pantry';
-
-  @override
   String cookedLeftoversTitle(int portions) {
     String _temp0 = intl.Intl.pluralLogic(
       portions,

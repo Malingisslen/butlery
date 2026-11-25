@@ -18965,10 +18965,6 @@
   "@a11yCookedLeftoversMore": {
     "description": "BUT-2486 part 5: stepper plus in the Klart sheet."
   },
-  "a11yCookedLeftoversChangePantry": "Change what is taken from the pantry",
-  "@a11yCookedLeftoversChangePantry": {
-    "description": "BUT-2486 part 5: the Ändra row in the Klart sheet."
-  },
   "cookedLeftoversTitle": "Done! You made {portions, plural, =1{1 portion} other{{portions} portions}}",
   "@cookedLeftoversTitle": {
     "description": "BUT-2486 part 5: title of the combined sheet after Klart.",

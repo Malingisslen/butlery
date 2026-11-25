@@ -35376,12 +35376,6 @@ abstract class AppLocalizations {
   /// **'Fler matlådor'**
   String get a11yCookedLeftoversMore;
 
-  /// BUT-2486 part 5: the Ändra row in the Klart sheet.
-  ///
-  /// In sv, this message translates to:
-  /// **'Ändra vad som dras av från skafferiet'**
-  String get a11yCookedLeftoversChangePantry;
-
   /// BUT-2486 part 5: title of the combined sheet after Klart.
   ///
   /// In sv, this message translates to:

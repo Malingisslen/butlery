@@ -23108,10 +23108,6 @@ class AppLocalizationsSv extends AppLocalizations {
   String get a11yCookedLeftoversMore => 'Fler matlådor';
 
   @override
-  String get a11yCookedLeftoversChangePantry =>
-      'Ändra vad som dras av från skafferiet';
-
-  @override
   String cookedLeftoversTitle(int portions) {
     String _temp0 = intl.Intl.pluralLogic(
       portions,
