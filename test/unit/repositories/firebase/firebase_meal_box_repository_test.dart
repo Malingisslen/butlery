@@ -385,5 +385,49 @@ void main() {
       expect(back['count'], 3);
       expect(back['location'], 'freezer');
     });
+
+    test(
+      'undoMove after a move with lunches gives the old box its count back',
+      () async {
+        final box = await stored(_box(count: 5, takes: {'2026-01-12': 2}));
+        final movedId = await repo.move(
+          box,
+          MealBoxLocation.fridge,
+          DateTime(2026, 1, 9),
+        );
+
+        await repo.undoMove(box, movedId);
+
+        expect((await _boxes(firestore).doc(movedId).get()).exists, isFalse);
+        final back = (await _boxes(firestore).doc(box.id).get()).data()!;
+        expect(back['count'], 5);
+        expect(back['takes'], {'2026-01-12': 2});
+        expect((await _boxes(firestore).get()).docs, hasLength(1));
+      },
+    );
+
+    test('the new methods refuse an unsafe id and write nothing', () async {
+      final box = await stored(_box(count: 3));
+      final unsafe = _box(id: 'a/b', count: 3);
+
+      await expectLater(() async => repo.restore(unsafe), throwsArgumentError);
+      await expectLater(
+        () async => repo.setStoredOn('a/b', DateTime(2026, 1, 5)),
+        throwsArgumentError,
+      );
+      await expectLater(
+        () async =>
+            repo.move(unsafe, MealBoxLocation.fridge, DateTime(2026, 1, 9)),
+        throwsArgumentError,
+      );
+      await expectLater(
+        () async => repo.undoMove(box, 'a/b'),
+        throwsArgumentError,
+      );
+
+      final docs = (await _boxes(firestore).get()).docs;
+      expect(docs.map((d) => d.id), [box.id]);
+      expect(docs.single.data()['count'], 3);
+    });
   });
 }

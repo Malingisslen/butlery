@@ -261,6 +261,43 @@ void main() {
       verify(() => repo.move(box, MealBoxLocation.freezer, today)).called(1);
     });
 
+    test('a box with one portion left can still be moved', () async {
+      when(() => repo.move(any(), any(), any())).thenAnswer((_) async => 'b');
+      final box = _box('a', count: 3, takes: {'2026-01-12': 2});
+
+      await withClock(
+        Clock.fixed(today),
+        () => service.move(box, MealBoxLocation.freezer),
+      );
+
+      verify(() => repo.move(box, MealBoxLocation.freezer, today)).called(1);
+    });
+
+    test('a date up to now is written', () async {
+      when(() => repo.setStoredOn(any(), any())).thenAnswer((_) async {});
+
+      await withClock(Clock.fixed(today), () async {
+        await service.setStoredOn('a', DateTime(2026, 1, 3));
+        await service.setStoredOn('a', today);
+      });
+
+      verify(() => repo.setStoredOn('a', DateTime(2026, 1, 3))).called(1);
+      verify(() => repo.setStoredOn('a', today)).called(1);
+    });
+
+    test('restore and undoMove reach their own repository calls', () async {
+      when(() => repo.restore(any())).thenAnswer((_) async {});
+      when(() => repo.undoMove(any(), any())).thenAnswer((_) async {});
+      final box = _box('a', count: 2);
+
+      await service.restore(box);
+      await service.undoMove(box, 'b');
+
+      verify(() => repo.restore(box)).called(1);
+      verify(() => repo.undoMove(box, 'b')).called(1);
+      verifyNever(() => repo.delete(any()));
+    });
+
     test('a refused delete reaches the caller', () async {
       when(() => repo.delete(any())).thenThrow(StateError('denied'));
 
