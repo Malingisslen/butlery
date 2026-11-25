@@ -284,4 +284,106 @@ void main() {
       );
     });
   });
+
+  group('restore, date and move (part 5b)', () {
+    Future<MealBox> stored(MealBox box) async {
+      final id = await repo.add(box);
+      if (box.takes.isNotEmpty) {
+        await _boxes(firestore).doc(id).update({'takes': box.takes});
+      }
+      final doc = await _boxes(firestore).doc(id).get();
+      return MealBox.fromMap(id, doc.data()!);
+    }
+
+    test(
+      'restore writes a deleted box back under its id, takes included',
+      () async {
+        final box = await stored(_box(count: 3, takes: {'2026-01-07': 1}));
+        await repo.delete(box.id);
+
+        await repo.restore(box);
+
+        final data = (await _boxes(firestore).doc(box.id).get()).data()!;
+        expect(data['count'], 3);
+        expect(data['takes'], {'2026-01-07': 1});
+        expect(data['location'], 'freezer');
+      },
+    );
+
+    test('restore of a box with no lunches writes no takes key', () {
+      final map = FirebaseMealBoxRepository.restoreWriteMap(_box(id: 'a'));
+      expect(map.containsKey('takes'), isFalse);
+      expect(map.keys.toSet(), {
+        'recipeId',
+        'recipeTitle',
+        'location',
+        'storedOn',
+        'count',
+        'updatedAt',
+      });
+    });
+
+    test('setStoredOn changes only the date', () async {
+      final box = await stored(_box());
+
+      await repo.setStoredOn(box.id, DateTime(2026, 1, 5));
+
+      final data = (await _boxes(firestore).doc(box.id).get()).data()!;
+      expect((data['storedOn'] as Timestamp).toDate(), DateTime(2026, 1, 5));
+      expect(data['count'], 4);
+    });
+
+    test(
+      'moving a box with no lunches makes a new box and deletes the old',
+      () async {
+        final box = await stored(_box(count: 3));
+
+        final movedId = await repo.move(
+          box,
+          MealBoxLocation.fridge,
+          DateTime(2026, 1, 9),
+        );
+
+        expect((await _boxes(firestore).doc(box.id).get()).exists, isFalse);
+        final moved = (await _boxes(firestore).doc(movedId).get()).data()!;
+        expect(moved['location'], 'fridge');
+        expect(moved['count'], 3);
+        expect((moved['storedOn'] as Timestamp).toDate(), DateTime(2026, 1, 9));
+        expect(moved.containsKey('takes'), isFalse);
+      },
+    );
+
+    test('moving keeps planned lunches on the old box', () async {
+      final box = await stored(_box(count: 5, takes: {'2026-01-12': 2}));
+
+      final movedId = await repo.move(
+        box,
+        MealBoxLocation.fridge,
+        DateTime(2026, 1, 9),
+      );
+
+      final old = (await _boxes(firestore).doc(box.id).get()).data()!;
+      expect(old['count'], 2);
+      expect(old['takes'], {'2026-01-12': 2});
+      expect(old['location'], 'freezer');
+      final moved = (await _boxes(firestore).doc(movedId).get()).data()!;
+      expect(moved['count'], 3);
+    });
+
+    test('undoMove deletes the new box and restores the old one', () async {
+      final box = await stored(_box(count: 3));
+      final movedId = await repo.move(
+        box,
+        MealBoxLocation.fridge,
+        DateTime(2026, 1, 9),
+      );
+
+      await repo.undoMove(box, movedId);
+
+      expect((await _boxes(firestore).doc(movedId).get()).exists, isFalse);
+      final back = (await _boxes(firestore).doc(box.id).get()).data()!;
+      expect(back['count'], 3);
+      expect(back['location'], 'freezer');
+    });
+  });
 }
