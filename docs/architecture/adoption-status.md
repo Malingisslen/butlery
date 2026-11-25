@@ -4,7 +4,7 @@
 > the tool and commit the result. Inline adoption % anywhere else in the repo
 > is forbidden by `tools/check_no_inline_adoption_pct.sh` (BUT-776).
 
-**Measured:** 2026-11-24T13:26:18.803527Z (UTC).
+**Measured:** 2026-11-25T12:21:35.764861Z (UTC).
 **Source ticket:** BUT-810. **Tool:** `tools/measure_adoption.dart`.
 **Scope:** every `*.dart` file under `lib/` except `lib/site-packages/`.
 
@@ -12,15 +12,15 @@
 
 | Axis | Adoption | Pool |
 | ---- | -------- | ---- |
-| `extends BaseService` (services) | 66.4% (71/107) | `lib/services/` classes |
-| `with ErrorHandlingMixin` (services) | 11.2% (12/107) | `lib/services/` classes |
-| `extends BaseFirebaseRepository` (repos) | 54.8% (40/73) | `lib/repositories/firebase/` classes |
-| `PermissionValidationMixin` effective coverage (repos) | 58.9% (43/73) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
-| `PermissionValidationMixin` direct adoption (repos) | 4.1% (3/73) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
-| `extends BaseViewModel` (viewmodels) | 61.4% (62/101) | `lib/viewmodels/` classes |
-| `SerializationUtils.safe*(` (call sites) | 1050 | 92 files use it |
+| `extends BaseService` (services) | 66.7% (72/108) | `lib/services/` classes |
+| `with ErrorHandlingMixin` (services) | 11.1% (12/108) | `lib/services/` classes |
+| `extends BaseFirebaseRepository` (repos) | 55.4% (41/74) | `lib/repositories/firebase/` classes |
+| `PermissionValidationMixin` effective coverage (repos) | 59.5% (44/74) | `lib/repositories/firebase/` classes — direct `with` OR via BFR |
+| `PermissionValidationMixin` direct adoption (repos) | 4.1% (3/74) | `lib/repositories/firebase/` classes — base classes / non-BFR adopters |
+| `extends BaseViewModel` (viewmodels) | 62.1% (64/103) | `lib/viewmodels/` classes |
+| `SerializationUtils.safe*(` (call sites) | 1060 | 93 files use it |
 
-**Total Dart files under `lib/` (excl. `site-packages/`):** 2066.
+**Total Dart files under `lib/` (excl. `site-packages/`):** 2088.
 
 ### Why `PermissionValidationMixin` has two rows
 
