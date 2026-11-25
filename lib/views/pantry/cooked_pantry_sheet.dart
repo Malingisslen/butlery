@@ -27,11 +27,18 @@ Future<List<CookedPantryTake>?> showCookedPantrySheet(
   BuildContext context, {
   required List<CookedPantryTake> takes,
   required int portions,
+  List<CookedPantryTake>? selected,
+  bool allowEmpty = false,
 }) {
   return showButlerySheet<List<CookedPantryTake>>(
     context: context,
     maxHeightFraction: 0.9,
-    builder: (_) => CookedPantrySheet(takes: takes, portions: portions),
+    builder: (_) => CookedPantrySheet(
+      takes: takes,
+      portions: portions,
+      selected: selected,
+      allowEmpty: allowEmpty,
+    ),
   );
 }
 
@@ -39,11 +46,21 @@ class CookedPantrySheet extends StatefulWidget {
   const CookedPantrySheet({
     required this.takes,
     required this.portions,
+    this.selected,
+    this.allowEmpty = false,
     super.key,
   });
 
   final List<CookedPantryTake> takes;
   final int portions;
+
+  /// Lets the user confirm with every row unticked, which answers an empty
+  /// selection. Used when the sheet adjusts a choice made elsewhere.
+  final bool allowEmpty;
+
+  /// The rows already chosen, with their amounts; the others open unticked.
+  /// Null opens every row of [takes] ticked.
+  final List<CookedPantryTake>? selected;
 
   @override
   State<CookedPantrySheet> createState() => _CookedPantrySheetState();
@@ -53,8 +70,17 @@ class _CookedPantrySheetState extends State<CookedPantrySheet> {
   // An amount of zero is an unticked row; the planned amount is kept in
   // widget.takes so ticking the row again brings it back.
   late final List<double> _amounts = [
-    for (final take in widget.takes) take.amount,
+    for (final take in widget.takes) _initialAmount(take),
   ];
+
+  double _initialAmount(CookedPantryTake take) {
+    final selected = widget.selected;
+    if (selected == null) return take.amount;
+    for (final chosen in selected) {
+      if (chosen.item.id == take.item.id) return chosen.amount;
+    }
+    return 0;
+  }
 
   int get _count => _amounts.where((a) => a > 0).length;
 
@@ -132,9 +158,13 @@ class _CookedPantrySheetState extends State<CookedPantrySheet> {
                 Expanded(
                   flex: 3,
                   child: FormButton(
-                    label: l10n.cookedPantryConfirm(_count),
+                    label: _count == 0
+                        ? l10n.commonSave
+                        : l10n.cookedPantryConfirm(_count),
                     expand: true,
-                    onPressed: _count > 0 ? _confirm : null,
+                    onPressed: _count > 0 || widget.allowEmpty
+                        ? _confirm
+                        : null,
                   ),
                 ),
               ],
